@@ -56,6 +56,7 @@ hChannelsET = ['eeet', 'mmet']
 hChannelsMT = ['eemt', 'mmmt']
 hChannelsTT = ['eett', 'mmtt']
 
+
 #            Channel str     Channel List, List for varialbes_map and title for the associated histo
 run_map = { "AllChannels" : (AllChannels, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
                                           ('Mass', 'Visible Mass_{#tau^{+}#tau^{-}}', 'h'),
@@ -122,10 +123,12 @@ run_map = { "AllChannels" : (AllChannels, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau
                                           ('Pt', 'Vector Sum Pt_{#tau^{+}#tau^{-}}', 'h'), ),
 }
 
-def makePlots(Chan_ = AllChannels, PostFit_=False, KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
+def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
 #  print normMap['ZZZ_eeem']
-  runSummary = "Run Summary:\n\tChannels = %s\n\tPost Fit = %r\n\tKSTest = %r\n\tKSRebin = %i\n\tCards = %s\n" % (Chan_[0][-2::], PostFit_, KSTest_, KSRebin_, Cards_)
+  runSummary = "Run Summary:\n\tChannels = %s\n\tPost Fit = %r\n\tKSTest = %r\n\tKSRebin = %i\n\tCards = %s" % (ChanKey_, PostFit_, KSTest_, KSRebin_, Cards_)
   print runSummary
+  print chan_map['%s' % ChanKey_]
+  print "\n"
   variables_map = {'LT_Higgs' : (10, 200, "L_{T} #tau1 #tau2", "(GeV)", "x"),
                    'Mass' : (20, 800, "Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}", "(GeV)", "x"),
                    #'Mass' : (20, 200, "SM higgs Visible Mass", "(GeV)", "h"),
@@ -186,7 +189,7 @@ def makePlots(Chan_ = AllChannels, PostFit_=False, KSTest_=False, KSRebin_=4, Ca
               my_red_combined = ROOT.THStack("%s combined" % sample, "%s combined" % sample)
           
               #for channel in run_map[key][0]:
-              for channel in Chan_:
+              for channel in chan_map[ChanKey_]:
               #$#for iii in range (0,1):
               #$#    channel = override
               #$#    print channel
@@ -401,10 +404,9 @@ def makePlots(Chan_ = AllChannels, PostFit_=False, KSTest_=False, KSRebin_=4, Ca
           #$#fileName = "%s/%s_%s_%s" % ( key, override, run_map[key][i][2], run_map[key][i][0])
           postFit = ''
           if PostFit_: postFit = 'pf_'
-          fileName = "%s/%s%s_%s_%s" % ( key, postFit, run_map[key][i][2], run_map[key][i][0], Chan_[0][-2::] )
+          fileName = "%s%s_%s_%s" % ( postFit, ChanKey_, run_map[key][i][2], run_map[key][i][0] )
   
           #c3.SaveAs("plots/background_comparisons/total_bkg_%s.pdf" % saveVar)
-          txtLow = 5
           if run_map[key][i][0] == 'Mass':
               my_total.GetXaxis().SetRange(0, 36)
           if run_map[key][i][0] == 'Mass' and run_map[key][i][2] == "z":
@@ -412,6 +414,11 @@ def makePlots(Chan_ = AllChannels, PostFit_=False, KSTest_=False, KSRebin_=4, Ca
           #pad5.SetLogy()        
           plotter.setTDRStyle(c3, 19.7, 8, "left") 
   
+          if txtLabel:
+              txtLow = 5
+              txt = ROOT.TText(txtLow, my_data.GetMaximum()*1.2, "Channels: %s" % ChanKey_ )
+              txt.Draw()
+
           ''' Adjusts the location of the X axis title,
           this is difficult because you can't accest a THStacks'
           axis titles '''
@@ -441,6 +448,14 @@ def makePlots(Chan_ = AllChannels, PostFit_=False, KSTest_=False, KSRebin_=4, Ca
           ''' Set us up to run a KS test AND Chi Squared test on mvamet '''
           if KSTest_:
             runKSandChiSqTest( variable, my_data, my_total, varBin, varRange, numBins, KSRebin_)
+
+chan_map = { 'AllChannels' : ('mmtt', 'eett', 'mmmt', 'eemt', 'mmet', 'eeet', 'mmme', 'eeem'),
+         'ZChannelsEE' : ('eett', 'eemt', 'eeet', 'eeem'),
+         'ZChannelsMM' : ('mmtt', 'mmmt', 'mmet', 'mmme'),
+         'hChannelsEM' : ('eeem', 'mmme'),
+         'hChannelsET' : ('eeet', 'mmet'),
+         'hChannelsMT' : ('eemt', 'mmmt'),
+         'hChannelsTT' : ('eett', 'mmtt')}
   
 def makeKSandChiSqPlots():
   KSTest = True
@@ -451,4 +466,4 @@ def makeKSandChiSqPlots():
 norm = getNormalization('PFCards/cards', '300')
 #print norm.keys()
 chan = ['eeem', 'mmme']
-makePlots(AllChannels, True, **norm)
+makePlots('ZChannelsMM', True, **norm)
