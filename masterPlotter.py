@@ -122,9 +122,9 @@ run_map = { "AllChannels" : (AllChannels, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau
                                           ('Pt', 'Vector Sum Pt_{#tau^{+}#tau^{-}}', 'h'), ),
 }
 
-def makePlots(PostFit_=False, KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
+def makePlots(Chan_ = AllChannels, PostFit_=False, KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
 #  print normMap['ZZZ_eeem']
-  runSummary = "Run Summary:\n\tPost Fit = %r\n\tKSTest = %r\n\tKSRebin = %i\n\tCards = %s\n" % (PostFit_, KSTest_, KSRebin_, Cards_)
+  runSummary = "Run Summary:\n\tChannels = %s\n\tPost Fit = %r\n\tKSTest = %r\n\tKSRebin = %i\n\tCards = %s\n" % (Chan_[0][-2::], PostFit_, KSTest_, KSRebin_, Cards_)
   print runSummary
   variables_map = {'LT_Higgs' : (10, 200, "L_{T} #tau1 #tau2", "(GeV)", "x"),
                    'Mass' : (20, 800, "Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}", "(GeV)", "x"),
@@ -185,7 +185,8 @@ def makePlots(PostFit_=False, KSTest_=False, KSRebin_=4, Cards_='Official', **no
               #print sample
               my_red_combined = ROOT.THStack("%s combined" % sample, "%s combined" % sample)
           
-              for channel in run_map[key][0]:
+              #for channel in run_map[key][0]:
+              for channel in Chan_:
               #$#for iii in range (0,1):
               #$#    channel = override
               #$#    print channel
@@ -333,29 +334,52 @@ def makePlots(PostFit_=False, KSTest_=False, KSRebin_=4, Cards_='Official', **no
           pad5.Draw()
           pad5.SetGridy(1)
           pad5.cd()
-          my_total.Draw("hist")
+
+          # Error bar work
+          if PostFit_:
+            ##errorArray = [0] * my_total.GetStack().Last().GetXaxis().GetNbins()
+            for g in range(1, my_total.GetStack().Last().GetXaxis().GetNbins() + 1 ):
+              binArray = []
+              for j in range(0, my_total.GetStack().GetLast() + 1):
+                #print "s: %s bin: %i val %f" % (my_total.GetStack()[i], j, my_total.GetStack()[i].GetBinError(j) )
+                binArray.append( my_total.GetStack()[j].GetBinError(g) )
+                my_total.GetStack()[j].SetBinError(g, 0)
+              toRoot = 0
+              #print "binArray:"
+              #print binArray
+              for k in binArray:
+                toRoot += k**2
+              ##errorArray[g-1] = math.sqrt( toRoot )
+              my_total.GetStack().Last().SetBinError(g, math.sqrt( toRoot ) )
+            ##my_total.GetStack().Last().SetLineColor( ROOT.kMagenta )
+            ##my_total.GetStack().Last().SetLineWidth( 1 )
+            my_total.Draw("hist e1")
+          else: my_total.Draw("hist")
+
           my_total.GetYaxis().SetTitle("Events / %i %s" % ( (variables_map[variable][1]/variables_map[variable][0]), variables_map[variable][3] ) )
           my_total.GetXaxis().SetTitle("%s %s" % (run_map[key][i][1], variables_map[variable][3]) )
           my_A300.SetLineWidth(2)
           my_A300.SetLineColor(ROOT.kOrange+10)
           my_A300.Draw("hist same")
   
+          # Used for calculating Signal / Background, lots of print out
+          # so it's commented out now days.
           numBins = my_A300.GetXaxis().GetNbins()
-          iii_A300 = 0
-          iii_backGrnd = 0
-          iii_data = 0
-          for iii in range (1, numBins + 2):
-            #print "A300 bin %i: %f" % (iii, my_A300.GetBinContent(iii)/A300Scaling )
-            #print "Back bin %i: %f" % (iii, my_total.GetStack().Last().GetBinContent(iii) )
-            A_300 = my_A300.GetBinContent(iii)/A300Scaling
-            backGrnd = my_total.GetStack().Last().GetBinContent(iii)
-            data_ = my_data.GetBinContent(iii)
-            iii_data += data_
-            iii_A300 += A_300
-            iii_backGrnd += backGrnd
-            if backGrnd > 0.0:
-              print "Bin %2i : %6.4f / %8.4f = %6.4f" % (iii, A_300, backGrnd, 100*A_300/backGrnd )
-          print "Total Signal to Background: %6.4f / %8.4f = %8.4f   ---   data: %i" % (iii_A300, iii_backGrnd, 100*iii_A300/iii_backGrnd, iii_data)
+          #iii_A300 = 0
+          #iii_backGrnd = 0
+          #iii_data = 0
+          #for iii in range (1, numBins + 2):
+          #  #print "A300 bin %i: %f" % (iii, my_A300.GetBinContent(iii)/A300Scaling )
+          #  #print "Back bin %i: %f" % (iii, my_total.GetStack().Last().GetBinContent(iii) )
+          #  A_300 = my_A300.GetBinContent(iii)/A300Scaling
+          #  backGrnd = my_total.GetStack().Last().GetBinContent(iii)
+          #  data_ = my_data.GetBinContent(iii)
+          #  iii_data += data_
+          #  iii_A300 += A_300
+          #  iii_backGrnd += backGrnd
+          #  if backGrnd > 0.0:
+          #    print "Bin %2i : %6.4f / %8.4f = %6.4f" % (iii, A_300, backGrnd, 100*A_300/backGrnd )
+          #print "Total Signal to Background: %6.4f / %8.4f = %8.4f   ---   data: %i" % (iii_A300, iii_backGrnd, 100*iii_A300/iii_backGrnd, iii_data)
   
           if my_data.GetMaximum() > my_total.GetMaximum():
             my_total.SetMaximum( 1.3 * my_data.GetMaximum() )
@@ -377,7 +401,7 @@ def makePlots(PostFit_=False, KSTest_=False, KSRebin_=4, Cards_='Official', **no
           #$#fileName = "%s/%s_%s_%s" % ( key, override, run_map[key][i][2], run_map[key][i][0])
           postFit = ''
           if PostFit_: postFit = 'pf_'
-          fileName = "%s/%s%s_%s" % ( key, postFit, run_map[key][i][2], run_map[key][i][0])
+          fileName = "%s/%s%s_%s_%s" % ( key, postFit, run_map[key][i][2], run_map[key][i][0], Chan_[0][-2::] )
   
           #c3.SaveAs("plots/background_comparisons/total_bkg_%s.pdf" % saveVar)
           txtLow = 5
@@ -410,7 +434,7 @@ def makePlots(PostFit_=False, KSTest_=False, KSRebin_=4, Cards_='Official', **no
 #  #            if key == 'AllChannels': chan = "All"
 #  #            else: chan = key[0] + ' = ' + key[-2] + key[-1]
 #  #            txt = ROOT.TText(txtLow, my_data.GetMaximum()*1.2, "Channels: %s" % chan )
-#  #            #txt.Draw()
+#  #            txt.Draw()
 #  #
 #              c3.SaveAs("plots/background/%s_log.root" % fileName)
   
@@ -426,4 +450,5 @@ def makeKSandChiSqPlots():
 
 norm = getNormalization('PFCards/cards', '300')
 #print norm.keys()
-makePlots(True, **norm)
+chan = ['eeem', 'mmme']
+makePlots(AllChannels, True, **norm)
