@@ -122,8 +122,10 @@ run_map = { "AllChannels" : (AllChannels, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau
                                           ('Pt', 'Vector Sum Pt_{#tau^{+}#tau^{-}}', 'h'), ),
 }
 
-def makePlots(KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
-  print normMap['ZZZ_eeem']
+def makePlots(PostFit_=False, KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
+#  print normMap['ZZZ_eeem']
+  runSummary = "Run Summary:\n\tPost Fit = %r\n\tKSTest = %r\n\tKSRebin = %i\n\tCards = %s\n" % (PostFit_, KSTest_, KSRebin_, Cards_)
+  print runSummary
   variables_map = {'LT_Higgs' : (10, 200, "L_{T} #tau1 #tau2", "(GeV)", "x"),
                    'Mass' : (20, 800, "Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}", "(GeV)", "x"),
                    #'Mass' : (20, 200, "SM higgs Visible Mass", "(GeV)", "h"),
@@ -146,11 +148,10 @@ def makePlots(KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
       nPlots = len( run_map[key] )
       for i in range(1, nPlots):
           variable = run_map[key][i][0]
-          print variable
-          print run_map[key][i][2] 
+          print "%s %s" % (variable, run_map[key][i][2]) 
           if KSTest_ and not variable == "mva_metEt": continue
           else: pass 
-          #if not (variable == 'A_SVfitMass'): continue # or variable == 'Mass'): continue
+          if not (variable == 'A_SVfitMass'): continue # or variable == 'Mass'): continue
           if variable == 'Mass' and run_map[key][i][2] == 'h':
               varRange = 300
               varBin = 10
@@ -160,7 +161,7 @@ def makePlots(KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
           else:
               varRange = variables_map[variable][1]
               varBin = variables_map[variable][0]
-          print "varRange %i varBin %i" % (varRange, varBin)
+          #print "varRange %i varBin %i" % (varRange, varBin)
           my_total = ROOT.THStack("my_total", "CMS Preliminary, Red + Irr bgk & Data, 19.7 fb^{-1} at S=#sqrt{8} TeV")
           if Cards_ == 'Official':
             my_shapes = ROOT.TFile("cardsOfficial/shapes.root", "r")
@@ -203,6 +204,23 @@ def makePlots(KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
                       first = products_map[channel][ run_map[key][i][2] ]
                       sampVar = "%s_%s%s" % (sample, first, variable)
                   my_red = my_shapes.Get("%s_zh/%s" % (channel, sampVar) )
+
+                  # Create the post fit section that scales histos by their
+                  # maximum likelihood.  From normMap: 0 = preFit, 1 = postFit
+                  # 2 = pre over post, 3 = post over pre 
+                  if PostFit_:
+                      if sample == AZhSample or sample == 'data_obs': pass
+                      else:
+                        #print "%s %s Pre Int: %f" % (sample, channel, my_red.Integral() )
+                        #print "Pre from normMap: %f" % normMap['%s_%s' % (sample, channel)][0]
+                        scale = normMap['%s_%s' % (sample, channel)][3]
+                        #print "scale: %s" % scale
+                        if scale == 'NAN':
+                            continue
+                        scale = float( scale )
+                        my_red.Scale( scale ) 
+                        #print "Post Int: %f" % my_red.Integral()
+                        #print "Post from normMap: %f" % normMap['%s_%s' % (sample, channel)][1]
                   #print "Bin#: %i" % my_red.GetSize()
                   #print "Max: %f" % ((my_red.GetSize() - 2) * my_red.GetBinWidth(1))
                   #try: my_red.GetEntries()
@@ -357,7 +375,9 @@ def makePlots(KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
           leg.SetBorderSize(0)
           leg.Draw()
           #$#fileName = "%s/%s_%s_%s" % ( key, override, run_map[key][i][2], run_map[key][i][0])
-          fileName = "%s/%s_%s" % ( key, run_map[key][i][2], run_map[key][i][0])
+          postFit = ''
+          if PostFit_: postFit = 'pf_'
+          fileName = "%s/%s%s_%s" % ( key, postFit, run_map[key][i][2], run_map[key][i][0])
   
           #c3.SaveAs("plots/background_comparisons/total_bkg_%s.pdf" % saveVar)
           txtLow = 5
@@ -378,21 +398,21 @@ def makePlots(KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
           c3.SaveAs("plots/background/%s.pdf" % fileName)
           c3.SaveAs("plots/background/png/%s.png" % fileName)
           if KSTest_:
-            c3.SaveAs("plots/KS-Testing/%s_N_%i_Bin_%i.png" % (variable, iii_data, 5*KSRebin_))
-          if run_map[key][i][0] == 'mva_metEt':
-              pad5.SetLogy()
-              if my_data.GetMaximum() > my_total.GetMaximum():
-                my_total.SetMaximum( 15 * my_data.GetMaximum() )
-              else: my_total.SetMaximum( 15 * my_total.GetMaximum() )
-              my_total.SetMinimum( 0.01 )
-  #
-  #        if txtLabel:
-  #            if key == 'AllChannels': chan = "All"
-  #            else: chan = key[0] + ' = ' + key[-2] + key[-1]
-  #            txt = ROOT.TText(txtLow, my_data.GetMaximum()*1.2, "Channels: %s" % chan )
-  #            #txt.Draw()
-  #
-              c3.SaveAs("plots/background/%s_log.root" % fileName)
+            c3.SaveAs("plots/KS-Testing/%s%s_N_%i_Bin_%i.png" % (postFit, variable, iii_data, 5*KSRebin_))
+#          if run_map[key][i][0] == 'mva_metEt':
+#              pad5.SetLogy()
+#              if my_data.GetMaximum() > my_total.GetMaximum():
+#                my_total.SetMaximum( 15 * my_data.GetMaximum() )
+#              else: my_total.SetMaximum( 15 * my_total.GetMaximum() )
+#              my_total.SetMinimum( 0.01 )
+#  #
+#  #        if txtLabel:
+#  #            if key == 'AllChannels': chan = "All"
+#  #            else: chan = key[0] + ' = ' + key[-2] + key[-1]
+#  #            txt = ROOT.TText(txtLow, my_data.GetMaximum()*1.2, "Channels: %s" % chan )
+#  #            #txt.Draw()
+#  #
+#              c3.SaveAs("plots/background/%s_log.root" % fileName)
   
           ''' Set us up to run a KS test AND Chi Squared test on mvamet '''
           if KSTest_:
