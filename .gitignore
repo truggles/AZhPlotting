@@ -1,2 +1,6 @@
 cards*
 plots/*
+PFCards/*
+test*
+*.pyc
+macros/oldOrArchive/*
