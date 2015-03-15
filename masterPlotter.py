@@ -6,6 +6,7 @@ import os
 import pyplotter.plot_functions as plotter
 import math
 from macros.stats import ChiSqProb
+from macros.postFitYields import getNormalization
 
 #AZhSample = 'AZh350'
 AZhSample = 'AZh300'
@@ -14,7 +15,7 @@ AZhSample = 'AZh300'
 #Cards = 'hSVFit'
 #Cards = 'Current'
 #KSTest = False
-KSTest = True
+#KSTest = True
 KSRebin = 12
 blind = False
 #blind = True
@@ -121,7 +122,8 @@ run_map = { "AllChannels" : (AllChannels, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau
                                           ('Pt', 'Vector Sum Pt_{#tau^{+}#tau^{-}}', 'h'), ),
 }
 
-def makePlots(KSTest_, KSRebin_, Cards_):
+def makePlots(KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
+  print normMap['ZZZ_eeem']
   variables_map = {'LT_Higgs' : (10, 200, "L_{T} #tau1 #tau2", "(GeV)", "x"),
                    'Mass' : (20, 800, "Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}", "(GeV)", "x"),
                    #'Mass' : (20, 200, "SM higgs Visible Mass", "(GeV)", "h"),
@@ -144,16 +146,21 @@ def makePlots(KSTest_, KSRebin_, Cards_):
       nPlots = len( run_map[key] )
       for i in range(1, nPlots):
           variable = run_map[key][i][0]
-          #print variable
+          print variable
+          print run_map[key][i][2] 
           if KSTest_ and not variable == "mva_metEt": continue
           else: pass 
           #if not (variable == 'A_SVfitMass'): continue # or variable == 'Mass'): continue
-          if variable == 'Mass' and run_map[key][i][2] != 'all':
+          if variable == 'Mass' and run_map[key][i][2] == 'h':
+              varRange = 300
+              varBin = 10
+          elif variable == 'Mass' and run_map[key][i][2] != 'all':
               varRange = 300
               varBin = 30
           else:
               varRange = variables_map[variable][1]
               varBin = variables_map[variable][0]
+          print "varRange %i varBin %i" % (varRange, varBin)
           my_total = ROOT.THStack("my_total", "CMS Preliminary, Red + Irr bgk & Data, 19.7 fb^{-1} at S=#sqrt{8} TeV")
           if Cards_ == 'Official':
             my_shapes = ROOT.TFile("cardsOfficial/shapes.root", "r")
@@ -173,7 +180,7 @@ def makePlots(KSTest_, KSRebin_, Cards_):
           my_Zjets = ROOT.TH1F("my_Zjets", "Zjets (Red bkg)", varBin, 0, varRange)
           my_A300 = ROOT.TH1F("my_A300", "%i x A300, xsec=1fb" % A300Scaling, varBin, 0, varRange)
           
-          for sample in ['ZH_ww125', 'ZH_tt125', 'TTZ', 'GGToZZ2L2L', 'ZZ', 'Zjets', 'ZZZ', 'WZZ', 'WWZ', AZhSample, 'data_obs']:
+          for sample in ['ZH_ww125', 'ZH_tt125', 'TTZ', 'GGToZZ2L2L', 'ZZZ', 'WZZ', 'WWZ', 'ZZ', 'Zjets', AZhSample, 'data_obs']:
               #print sample
               my_red_combined = ROOT.THStack("%s combined" % sample, "%s combined" % sample)
           
@@ -216,10 +223,11 @@ def makePlots(KSTest_, KSRebin_, Cards_):
                   if run_map[key][i][0] == 'Pt': my_red.Rebin(4)
                   if run_map[key][i][0] == 'mva_metEt': my_red.Rebin( KSRebin_ )
                   if run_map[key][i][0] == 'Mass' and run_map[key][i][2] == 'all': my_red.Rebin(2)
+                  #if run_map[key][i][0] == 'Mass' and run_map[key][i][2] == 'h': my_red.Rebin(2)
                   if run_map[key][i][0] == 'SVfitMass' and run_map[key][i][2] == 'h': my_red.Rebin(2)
                   if run_map[key][i][0] == 'A_SVfitMass' and run_map[key][i][2] == 'all': my_red.Rebin(2)
                   if run_map[key][i][0] == 'LT_Higgs': my_red.Rebin(2)
-  #$$                if variable == 'Mass' and run_map[key][i][2] == 'h': my_red.Rebin(3)
+                  if variable == 'Mass' and run_map[key][i][2] == 'h': my_red.Rebin(3)
                   my_red.GetXaxis().SetTitle("%s (GeV), %s" % (variable, channel) )
           
                   ''' Set reasonable maximums on histos '''        
@@ -343,7 +351,7 @@ def makePlots(KSTest_, KSRebin_, Cards_):
           my_data.Draw("e1 same")
           my_data.SetMarkerStyle(21)
           my_data.SetMarkerSize(.8)
-          leg = pad5.BuildLegend(0.60, 0.55, 0.93, 0.89)
+          leg = pad5.BuildLegend(0.66, 0.55, 0.93, 0.89)
           leg.SetMargin(0.3)
           leg.SetFillColor(0)
           leg.SetBorderSize(0)
@@ -465,7 +473,12 @@ def makePlots(KSTest_, KSRebin_, Cards_):
             c7.SaveAs("plots/KS-Testing/%s.png" % fileNameKS)
             c7.Close()
   
-for binning in [1, 2, 3, 4, 6, 12]:
-  makePlots( KSTest, binning, 'Official')
-  makePlots( KSTest, binning, 'hSVFit')
+def makeKSandChiSqPlots():
+  KSTest = True
+  for binning in [1, 2, 3, 4, 6, 12]:
+    makePlots( KSTest, binning, 'Official')
+    makePlots( KSTest, binning, 'hSVFit')
 
+norm = getNormalization('PFCards/cards', '300')
+#print norm.keys()
+makePlots(**norm)
