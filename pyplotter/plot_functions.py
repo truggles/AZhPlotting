@@ -92,24 +92,24 @@ def makeStackPlots (stacked, unstacked, hist_opts, plot_info):
 def setTDRStyle(canvas, luminosity, energy, printCMS):
     tdrstyle.setTDRStyle() 
     if printCMS == "right" or printCMS == "left":
-        if energy == 13:
-            CMS_lumi.lumi_13TeV = "%s fb^{-1}" % luminosity
-            if printCMS == "left":
-                iPos = 11
-            else:
-                iPos = 13
-            CMS_lumi.writeExtraText = 1
-            CMS_lumi.extraText = "Preliminary"
-            CMS_lumi.CMS_lumi(canvas, 4, iPos)
+        #if energy == 13:
+        CMS_lumi.lumi_8TeV = "%s fb^{-1}" % luminosity
+        if printCMS == "left":
+            iPos = 11
+        else:
+            iPos = 13
+        CMS_lumi.writeExtraText = 1
+        CMS_lumi.extraText = "Preliminary"
+        CMS_lumi.CMS_lumi(canvas, 2, iPos)
 def getCanvas():
-    H_ref = 600; 
+    H_ref = 800; 
     W_ref = 800; 
     W = W_ref
     H  = H_ref
 
-    T = 0.08*H_ref
+    T = 0.12*H_ref
     B = 0.12*H_ref 
-    L = 0.12*W_ref
+    L = 0.08*W_ref
     R = 0.04*W_ref
 
     canvas = ROOT.TCanvas("c2","c2",50,50,W,H)

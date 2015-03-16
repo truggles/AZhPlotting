@@ -9,17 +9,17 @@ cmsText     = "CMS";
 cmsTextFont   = 61  
 
 writeExtraText = True
-extraText   = "Very Preliminary"
+extraText   = "Preliminary"
 extraTextFont = 52 
 
-lumiTextSize     = 0.5
-lumiTextOffset   = 0.2
+lumiTextSize     = 0.35
+lumiTextOffset   = 0.25
 
-cmsTextSize      = 0.5
+cmsTextSize      = 0.35
 cmsTextOffset    = 0.1
 
-relPosX    = 0.045
-relPosY    = 0.035
+relPosX    = 0.065
+relPosY    = 0.000
 relExtraDY = 1.2
 
 extraOverCmsTextSize  = 0.76
@@ -84,7 +84,7 @@ def CMS_lumi(pad,  iPeriod,  iPosX ):
     elif ( iPeriod==12 ):
         lumiText += "8 TeV"
             
-    print lumiText
+    #print lumiText
 
     latex = rt.TLatex()
     latex.SetNDC()
@@ -97,7 +97,7 @@ def CMS_lumi(pad,  iPeriod,  iPosX ):
     latex.SetTextAlign(31) 
     latex.SetTextSize(lumiTextSize*t)    
 
-    latex.DrawLatex(1-r,1-t+lumiTextOffset*t,lumiText)
+    latex.DrawLatex(1-r-0.02,1-t+lumiTextOffset*t,lumiText) # -0.02 aligns with my plot borders
 
     if( outOfFrame ):
         latex.SetTextFont(cmsTextFont)
