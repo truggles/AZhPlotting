@@ -4,3 +4,4 @@ PFCards/*
 test*
 *.pyc
 macros/oldOrArchive/*
+pyplotter/*.pyc
