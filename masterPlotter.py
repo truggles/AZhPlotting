@@ -21,7 +21,7 @@ AZhSample = 'AZh300'
 KSRebin = 12
 blind = False
 #blind = True
-A300Scaling = 20
+A300Scaling = 15
 ROOT.gROOT.SetBatch(True)
 txtLabel = True
 
@@ -215,14 +215,9 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
                         my_red.Scale( scale ) 
                         #print "Post Int: %f" % my_red.Integral()
                         #print "Post from normMap: %f" % normMap['%s_%s' % (sample, channel)][1]
-                  #print "Bin#: %i" % my_red.GetSize()
-                  #print "Max: %f" % ((my_red.GetSize() - 2) * my_red.GetBinWidth(1))
-                  #try: my_red.GetEntries()
-                  #except AttributeError:
-                  #    print sampVar + 'in channel ' + channel + 'has problems'
-                  #    continue
+
                   c1 = plotter.getCanvas()
-                  pad1 = ROOT.TPad("pad1","",0,0,1,1) # compare distributions
+                  pad1 = ROOT.TPad("pad1","",0,0,1,1)
                   pad1.Draw()    
                   pad1.cd() 
                   pad1.SetGrid()
@@ -240,20 +235,15 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
                   if variable == 'Mass' and run_map[key][i][2] == 'h': my_red.Rebin(3)
                   my_red.GetXaxis().SetTitle("%s (GeV), %s" % (variable, channel) )
           
-                  ''' Set reasonable maximums on histos '''        
-                  my_red_max = my_red.GetMaximum()
-                  my_red.SetMaximum(1.8 * my_red.GetMaximum() )
-              
                   pad1.Close()
                   c1.Close()
-                      
                   gROOT.cd()
                   new_my_red = my_red.Clone()
                   my_red_combined.Add(new_my_red)
               
               c2 = plotter.getCanvas()
               plotter.setTDRStyle(c2, 19.7, 8, "left") 
-              pad2 = ROOT.TPad("pad2","",0,0.2,1,1) # compare distributions
+              pad2 = ROOT.TPad("pad2","",0,0.2,1,1)
               pad2.Draw()
               pad2.cd()
               my_red_combined.GetStack().Last().Draw()
@@ -272,6 +262,8 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
                   #print "# of Bins: %i" % my_data.GetSize()
                   #print "Bin Width %i" % my_data.GetBinWidth(1)
                   #print "Max: %i" % ( (my_data.GetSize() - 2) * my_data.GetBinWidth(1) )
+
+                  ''' This is where we blind our data if it is desired.  We only blind A sv Fit Mass and A visible Mass '''
                   if (variable == 'Mass' or variable == 'A_SVfitMass') and not (run_map[key][i][2] == 'h' or run_map[key][i][2] == 'z') and blind:
                       print "Var: %s append %s" % (variable, run_map[key][i][2] )
                       print "We made it to blind section"
@@ -290,7 +282,6 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
                       print "low: %s, high: %s" % (lowBlind, highBlind)
                       binsToNull = []
                       for j in range (lowBlind, highBlind + 1):
-                          
                           binsToNull.append(j)
                       print binsToNull
                       for bin in binsToNull:
@@ -315,7 +306,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
                   my_total.Add( eval( call ), "hist" )
           
           c3 = plotter.getCanvas() # Use Kenneth's canvas setup
-          pad5 = ROOT.TPad("pad5","",0,0,1,1) # compare distributions
+          pad5 = ROOT.TPad("pad5","",0,0,1,1)
           pad5.Draw()
           pad5.SetGridy(1)
           pad5.cd()
@@ -336,7 +327,6 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
                 #print "s: %s bin: %i val %f" % (my_total.GetStack()[i], j, my_total.GetStack()[i].GetBinError(j) )
                 binArray.append( my_total.GetStack()[j].GetBinError(g) )
                 my_total.GetStack()[j].SetBinError(g, 0)
-                #my_total.GetStack()[j].SetFillColorAlpha(ROOT.kGray+2, 0.35)
               toRoot = 0
               for k in binArray:
                 toRoot += k**2
@@ -344,9 +334,6 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
               my_total.GetStack().Last().SetMarkerSize( 0 )
               errorY.append( math.sqrt( toRoot ) )
               yPos.append( my_total.GetStack().Last().GetBinContent(g) )
-              #my_total.GetStack().Last().SetFillColorAlpha(ROOT.kGray+2, 0.35)
-            ##my_total.GetStack().Last().SetLineColor( ROOT.kMagenta )
-            ##my_total.GetStack().Last().SetLineWidth( 1 )
             xPos = numpy.array( xPos, dtype='float' ).flatten('C')
             yPos = numpy.array( yPos, dtype='float' ).flatten('C')
             errorX = numpy.array( errorX, dtype='float' ).flatten('C')
@@ -354,9 +341,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
             errorPlot = ROOT.TGraphErrors( nBins, xPos, yPos, errorX, errorY)
             errorPlot.SetTitle("Uncert.")
             errorPlot.SetMarkerStyle( 0 )
-            #errorPlot.Draw("A e2")
             errorPlot.SetFillColorAlpha(ROOT.kGray+2, 0.35) 
-            #my_total.Draw("hist same")
             my_total.Draw("hist")
             errorPlot.Draw("e2 same")
             pad5.Update()
@@ -420,7 +405,6 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
               my_total.GetXaxis().SetRange(0, 36)
           if run_map[key][i][0] == 'Mass' and run_map[key][i][2] == "z":
               my_total.GetXaxis().SetRange(5, 15)
-          #pad5.SetLogy()        
           plotter.setTDRStyle(c3, 19.7, 8, "left") 
   
           if txtLabel:
