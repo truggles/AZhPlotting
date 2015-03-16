@@ -175,7 +175,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           my_ZZZ = ROOT.TH1F("my_ZZZ", "ZZZ", varBin, 0, varRange)
           my_WZZ = ROOT.TH1F("my_WZZ", "WZZ", varBin, 0, varRange)
           my_WWZ = ROOT.TH1F("my_WWZ", "WWZ", varBin, 0, varRange)
-          my_Zjets = ROOT.TH1F("my_Zjets", "Zjets (Red bkg)", varBin, 0, varRange)
+          my_Zjets = ROOT.TH1F("my_Zjets", "Zjets", varBin, 0, varRange)
           my_A300 = ROOT.TH1F("my_A300", "%i x A300, xsec=1fb" % A300Scaling, varBin, 0, varRange)
           
           for sample in ['ZH_ww125', 'ZH_tt125', 'TTZ', 'GGToZZ2L2L', 'ZZZ', 'WZZ', 'WWZ', 'ZZ', 'Zjets', AZhSample, 'data_obs']:
@@ -362,11 +362,6 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
             pad5.Update()
           else: my_total.Draw("hist")
 
-          ''' Remove all markers except data '''
-          #for j in range(0, my_total.GetStack().GetLast() + 1):
-          #    my_total.GetStack()[j].SetMarkerSize( 0 )
-          #my_A300.SetMarkerSize( 0 )
-
           my_total.GetYaxis().SetTitle("Events / %i %s" % ( (variables_map[variable][1]/variables_map[variable][0]), variables_map[variable][3] ) )
           my_total.GetXaxis().SetTitle("%s %s" % (run_map[key][i][1], variables_map[variable][3]) )
           my_A300.SetLineWidth(2)
@@ -404,13 +399,17 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           my_data.Draw("e1 same")
           my_data.SetMarkerStyle(21)
           my_data.SetMarkerSize(.8)
-          leg = pad5.BuildLegend(0.66, 0.55, 0.93, 0.89)
-          #leg = ROOT.TLegend(0.66, 0.55, 0.93, 0.89)
-          leg.SetMargin(0.3)
-          leg.SetFillColor(0)
-          leg.SetBorderSize(0)
-          leg.AddEntry(
-          leg.Draw()
+
+          ''' Build the legend explicitly so we can specify marker styles '''
+          legend = ROOT.TLegend(0.66, 0.55, 0.93, 0.89)
+          legend.SetMargin(0.3)
+          legend.SetBorderSize(0)
+          legend.AddEntry( my_data, "Data", "lep")
+          legend.AddEntry( my_A300, "%i x A%s, xsec=1fb" % (A300Scaling, AZhSample[-3::]), 'l')
+          for j in range(0, my_total.GetStack().GetLast() + 1):
+              legend.AddEntry( my_total.GetStack()[j], my_total.GetStack()[j].GetTitle(), 'f')
+          legend.AddEntry( errorPlot, errorPlot.GetTitle(), "f") 
+          legend.Draw()
 
           ''' Name our histo something unique with relavent info '''
           postFit = ''
