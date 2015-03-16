@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 from ROOT import gROOT
 from ROOT import gStyle
+from ROOT import TGraphErrors
 import ROOT
 import os
 import pyplotter.plot_functions as plotter
 import math
+import numpy
 from macros.postFitYields import getNormalization
 from macros.stats import runKSandChiSqTest
 
@@ -124,25 +126,17 @@ run_map = { "AllChannels" : (AllChannels, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau
 }
 
 def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
-#  print normMap['ZZZ_eeem']
   runSummary = "Run Summary:\n\tChannels = %s\n\tPost Fit = %r\n\tKSTest = %r\n\tKSRebin = %i\n\tCards = %s" % (ChanKey_, PostFit_, KSTest_, KSRebin_, Cards_)
   print runSummary
   print chan_map['%s' % ChanKey_]
   print "\n"
   variables_map = {'LT_Higgs' : (10, 200, "L_{T} #tau1 #tau2", "(GeV)", "x"),
                    'Mass' : (20, 800, "Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}", "(GeV)", "x"),
-                   #'Mass' : (20, 200, "SM higgs Visible Mass", "(GeV)", "h"),
-                   #'Mass' : (20, 200, "Z Mass", "(GeV)", "z"),
                    'mva_metEt' : (60/KSRebin_, 300, "mva metEt", "(GeV)", "x"),
                    'A_SVfitMass' : (20, 800, "Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}", "(GeV)", "x"),
                    'SVfitMass' : (15, 300, "#tau1 #tau2 Mass", "(GeV)", "h"),
-                   #'DR' : (20, 10, "dR of #tau1 #tau2", "(GeV)", "h"),
                    'DR' : (20, 10, "dR of lepton1 lepton2", "radians", "z"),
-                   'Pt' : (15, 300, "temp", "(GeV)", 0),
-                   #'Pt' : (20, 100, "#tau1 Pt", "(GeV)", 2),
-                   #'Pt' : (20, 100, "lepton1 lepton2 Vector Sum Pt", "(GeV)", "z"),
-                   #'Pt' : (20, 100, "#tau1 #tau2 Vector Sum Pt", "(GeV)", "h"),
-  }
+                   'Pt' : (15, 300, "temp", "(GeV)", 0)}
 
   for key in run_map.keys():
       if key == "AllChannels": pass
@@ -188,11 +182,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
               #print sample
               my_red_combined = ROOT.THStack("%s combined" % sample, "%s combined" % sample)
           
-              #for channel in run_map[key][0]:
               for channel in chan_map[ChanKey_]:
-              #$#for iii in range (0,1):
-              #$#    channel = override
-              #$#    print channel
                   if run_map[key][i][2] == "all":
                       if variable == 'A_SVfitMass': sampVar = sample
                       else: sampVar = sample + "_" + variable
@@ -209,9 +199,9 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
                       sampVar = "%s_%s%s" % (sample, first, variable)
                   my_red = my_shapes.Get("%s_zh/%s" % (channel, sampVar) )
 
-                  # Create the post fit section that scales histos by their
-                  # maximum likelihood.  From normMap: 0 = preFit, 1 = postFit
-                  # 2 = pre over post, 3 = post over pre 
+                  ''' Create the post fit section that scales histos by their
+                  maximum likelihood.  From normMap: 0 = preFit, 1 = postFit
+                  2 = pre over post, 3 = post over pre '''
                   if PostFit_:
                       if sample == AZhSample or sample == 'data_obs': pass
                       else:
@@ -231,9 +221,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
                   #except AttributeError:
                   #    print sampVar + 'in channel ' + channel + 'has problems'
                   #    continue
-                  ##c1 = ("c1", "a canvas")
                   c1 = plotter.getCanvas()
-                  #plotter.setTDRStyle(c1, 19.7, 8, "left") 
                   pad1 = ROOT.TPad("pad1","",0,0,1,1) # compare distributions
                   pad1.Draw()    
                   pad1.cd() 
@@ -256,7 +244,6 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
                   my_red_max = my_red.GetMaximum()
                   my_red.SetMaximum(1.8 * my_red.GetMaximum() )
               
-                  #c1.SaveAs("plots/background_comparisons/%s/%s.png" % (sample, channel))
                   pad1.Close()
                   c1.Close()
                       
@@ -264,16 +251,12 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
                   new_my_red = my_red.Clone()
                   my_red_combined.Add(new_my_red)
               
-              #c2 = ROOT.TCanvas("c2", "a canvas")
               c2 = plotter.getCanvas()
               plotter.setTDRStyle(c2, 19.7, 8, "left") 
               pad2 = ROOT.TPad("pad2","",0,0.2,1,1) # compare distributions
               pad2.Draw()
               pad2.cd()
               my_red_combined.GetStack().Last().Draw()
-              #my_red_combined.GetStack().Last().GetXaxis().SetTitle("%s (GeV), combined" % variable)
-              #pad2.SetGrid() 
-              #c2.SaveAs("plots/background_comparisons/%s/combined.png" % sample)
   
               ROOT.gStyle.SetTitleOffset(1.15, "x")
               ROOT.gPad.Modified()
@@ -308,8 +291,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
                       binsToNull = []
                       for j in range (lowBlind, highBlind + 1):
                           
-                          binsToNull.append(j)# = [lowBlind]#, lowBlind + 1, lowBlind + 2]#,lowBlind + 3,lowBlind + 4, lowBlind + 5]
-                      #tGraph = ROOT.TGraph( my_data, "e1")
+                          binsToNull.append(j)
                       print binsToNull
                       for bin in binsToNull:
                           print "bin: %i" % bin
@@ -338,26 +320,52 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           pad5.SetGridy(1)
           pad5.cd()
 
-          # Error bar work
+          ''' Error bar work '''
           if PostFit_:
-            ##errorArray = [0] * my_total.GetStack().Last().GetXaxis().GetNbins()
-            for g in range(1, my_total.GetStack().Last().GetXaxis().GetNbins() + 1 ):
+            nBins = my_total.GetStack().Last().GetXaxis().GetNbins()
+            binWidth = my_total.GetStack().Last().GetBinWidth( 1 )
+            xPos = []
+            yPos = []
+            for binnn in range( 0, nBins ):
+              xPos.append( (binWidth / 2) + (binnn * binWidth) )
+            errorX = [binWidth / 2] * nBins
+            errorY = []
+            for g in range(1, nBins + 1 ):
               binArray = []
               for j in range(0, my_total.GetStack().GetLast() + 1):
                 #print "s: %s bin: %i val %f" % (my_total.GetStack()[i], j, my_total.GetStack()[i].GetBinError(j) )
                 binArray.append( my_total.GetStack()[j].GetBinError(g) )
                 my_total.GetStack()[j].SetBinError(g, 0)
+                #my_total.GetStack()[j].SetFillColorAlpha(ROOT.kGray+2, 0.35)
               toRoot = 0
-              #print "binArray:"
-              #print binArray
               for k in binArray:
                 toRoot += k**2
-              ##errorArray[g-1] = math.sqrt( toRoot )
               my_total.GetStack().Last().SetBinError(g, math.sqrt( toRoot ) )
+              my_total.GetStack().Last().SetMarkerSize( 0 )
+              errorY.append( math.sqrt( toRoot ) )
+              yPos.append( my_total.GetStack().Last().GetBinContent(g) )
+              #my_total.GetStack().Last().SetFillColorAlpha(ROOT.kGray+2, 0.35)
             ##my_total.GetStack().Last().SetLineColor( ROOT.kMagenta )
             ##my_total.GetStack().Last().SetLineWidth( 1 )
-            my_total.Draw("hist e1")
+            xPos = numpy.array( xPos, dtype='float' ).flatten('C')
+            yPos = numpy.array( yPos, dtype='float' ).flatten('C')
+            errorX = numpy.array( errorX, dtype='float' ).flatten('C')
+            errorY = numpy.array( errorY, dtype='float' ).flatten('C')
+            errorPlot = ROOT.TGraphErrors( nBins, xPos, yPos, errorX, errorY)
+            errorPlot.SetTitle("Uncert.")
+            errorPlot.SetMarkerStyle( 0 )
+            #errorPlot.Draw("A e2")
+            errorPlot.SetFillColorAlpha(ROOT.kGray+2, 0.35) 
+            #my_total.Draw("hist same")
+            my_total.Draw("hist")
+            errorPlot.Draw("e2 same")
+            pad5.Update()
           else: my_total.Draw("hist")
+
+          ''' Remove all markers except data '''
+          #for j in range(0, my_total.GetStack().GetLast() + 1):
+          #    my_total.GetStack()[j].SetMarkerSize( 0 )
+          #my_A300.SetMarkerSize( 0 )
 
           my_total.GetYaxis().SetTitle("Events / %i %s" % ( (variables_map[variable][1]/variables_map[variable][0]), variables_map[variable][3] ) )
           my_total.GetXaxis().SetTitle("%s %s" % (run_map[key][i][1], variables_map[variable][3]) )
@@ -365,8 +373,8 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           my_A300.SetLineColor(ROOT.kOrange+10)
           my_A300.Draw("hist same")
   
-          # Used for calculating Signal / Background, lots of print out
-          # so it's commented out now days.
+          ''' Used for calculating Signal / Background, lots of print out
+          so it's commented out now days. '''
           numBins = my_A300.GetXaxis().GetNbins()
           #iii_A300 = 0
           #iii_backGrnd = 0
@@ -397,16 +405,18 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           my_data.SetMarkerStyle(21)
           my_data.SetMarkerSize(.8)
           leg = pad5.BuildLegend(0.66, 0.55, 0.93, 0.89)
+          #leg = ROOT.TLegend(0.66, 0.55, 0.93, 0.89)
           leg.SetMargin(0.3)
           leg.SetFillColor(0)
           leg.SetBorderSize(0)
+          leg.AddEntry(
           leg.Draw()
-          #$#fileName = "%s/%s_%s_%s" % ( key, override, run_map[key][i][2], run_map[key][i][0])
+
+          ''' Name our histo something unique with relavent info '''
           postFit = ''
           if PostFit_: postFit = 'pf_'
           fileName = "%s%s_%s_%s" % ( postFit, ChanKey_, run_map[key][i][2], run_map[key][i][0] )
   
-          #c3.SaveAs("plots/background_comparisons/total_bkg_%s.pdf" % saveVar)
           if run_map[key][i][0] == 'Mass':
               my_total.GetXaxis().SetRange(0, 36)
           if run_map[key][i][0] == 'Mass' and run_map[key][i][2] == "z":
@@ -427,6 +437,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           ROOT.gPad.Update()
   
           c3.SaveAs("plots/background/%s.pdf" % fileName)
+          c3.SaveAs("plots/background/%s.root" % fileName)
           c3.SaveAs("plots/background/png/%s.png" % fileName)
           if KSTest_:
             c3.SaveAs("plots/KS-Testing/%s%s_N_%i_Bin_%i.png" % (postFit, variable, iii_data, 5*KSRebin_))
@@ -436,13 +447,6 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
 #                my_total.SetMaximum( 15 * my_data.GetMaximum() )
 #              else: my_total.SetMaximum( 15 * my_total.GetMaximum() )
 #              my_total.SetMinimum( 0.01 )
-#  #
-#  #        if txtLabel:
-#  #            if key == 'AllChannels': chan = "All"
-#  #            else: chan = key[0] + ' = ' + key[-2] + key[-1]
-#  #            txt = ROOT.TText(txtLow, my_data.GetMaximum()*1.2, "Channels: %s" % chan )
-#  #            txt.Draw()
-#  #
 #              c3.SaveAs("plots/background/%s_log.root" % fileName)
   
           ''' Set us up to run a KS test AND Chi Squared test on mvamet '''
@@ -467,3 +471,4 @@ norm = getNormalization('PFCards/cards', '300')
 #print norm.keys()
 chan = ['eeem', 'mmme']
 makePlots('ZChannelsMM', True, **norm)
+makePlots('AllChannels', True, **norm)
