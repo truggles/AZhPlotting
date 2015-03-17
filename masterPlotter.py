@@ -390,7 +390,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           cmsLumiScale = 1 # this is to adjust the histo max so that the data doesn't cover the 'CMS Prelim'
           dataMax = my_data.GetMaximum()
           dataMaxBin = my_data.GetMaximumBin()
-          if dataMaxBin < 5:
+          if float( dataMaxBin ) < (0.35 * my_data.GetXaxis().GetNbins() ):
               cmsLumiScale = 1.2
           dataError = my_data.GetBinError( dataMaxBin )
           dataMaxPlusError = dataMax + dataError
@@ -425,9 +425,11 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           fileName = "%s%s_%s_%s" % ( postFit, ChanKey_, run_map[key][i][2], run_map[key][i][0] )
   
           if run_map[key][i][0] == 'Mass':
-              my_total.GetXaxis().SetRange(0, 36)
+              my_total.GetXaxis().SetRange(1, 35)
           if run_map[key][i][0] == 'Mass' and run_map[key][i][2] == "z":
               my_total.GetXaxis().SetRange(5, 15)
+          if run_map[key][i][0] == 'Mass' and run_map[key][i][2] == 'h':
+              my_total.GetXaxis().SetRange(1, 10)
           plotter.printLumi(c3, 19.7, 8, "left") 
   
  #         c3.cd()
@@ -481,10 +483,10 @@ def makeKSandChiSqPlots():
 norm = getNormalization('PFCards/cards', '300')
 #print norm.keys()
 #chan = ['eeem', 'mmme']
-#makePlots('ZChannelsMM', True, **norm)
-#makePlots('AllChannels', True, **norm)
-for combo in chan_map.keys():
-    makePlots( combo , True, **norm)
+makePlots('ZChannelsMM', True, **norm)
+makePlots('AllChannels', True, **norm)
+#for combo in chan_map.keys():
+#    makePlots( combo , True, **norm)
 
 
 
