@@ -35,15 +35,27 @@ products_map = {'mmtt' : ('m1', 'm2', 't1', 't2'),
                 'eeem' : ('e1', 'e2', 'e3', 'm')
 }
 # maps sample to marker color and marker fill style
-samples = { 'TTZ' : ("kGreen-7", "kCyan-2", 21),
-            'ZH_ww125' : ("kCyan-7", "kYellow-2", 21),
-            'ZH_tt125' : ("kMagenta-7", "kMagenta-2", 21),
-            'ZZ' : ("kBlue-7", "kGreen+2", 21),
-            'ZZZ' : ("kGreen+7", "kGreen+2", 21),
-            'WZZ' : ("kGreen-1", "kGreen+2", 21),
-            'WWZ' : ("kGreen+2", "kGreen+2", 21),
-            'GGToZZ2L2L' : ("kRed-7", "kRed-2", 21), 
-            'Zjets' : ("kYellow-7", "kMagenta+1", 21),
+#samples = { 'TTZ' : ("kGreen-7", "kCyan-2", 21),
+#            'ZH_ww125' : ("kRed-7", "kYellow-2", 21),
+#            'ZH_tt125' : ("kMagenta-7", "kMagenta-2", 21),
+#            'ZZ' : ("kBlue-7", "kGreen+2", 21),
+#            'ZZZ' : ("kOrange+9", "kGreen+2", 21),
+#            'WZZ' : ("kOrange+7", "kGreen+2", 21),
+#            'WWZ' : ("kOrange+2", "kGreen+2", 21),
+#            'GGToZZ2L2L' : ("kCyan-7", "kRed-2", 21), 
+#            'Zjets' : ("kYellow-7", "kMagenta+1", 21),
+#            AZhSample : ("kBlue", "kBlue", 21),
+#            'data_obs' : ("","")
+#}
+samples = { 'Zjets' : ("kCyan+1", "kMagenta+1", 21),
+            'ZZ' : ("kGreen+1", "kGreen+2", 21),
+            'WWZ' : ("kRed+1", "kGreen+2", 21),
+            'WZZ' : ("kBlue+1", "kGreen+2", 21),
+            'ZZZ' : ("kYellow", "kGreen+2", 21),
+            'GGToZZ2L2L' : ("kMagenta+1", "kRed-2", 21), 
+            'TTZ' : ("kTeal+1", "kCyan-2", 21),
+            'ZH_tt125' : ("kPink+9", "kMagenta-2", 21),
+            'ZH_ww125' : ("kOrange+10", "kYellow-2", 21),
             AZhSample : ("kBlue", "kBlue", 21),
             'data_obs' : ("","")
 }
@@ -130,6 +142,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
   print runSummary
   print chan_map['%s' % ChanKey_]
   print "\n"
+  #print normMap
   variables_map = {'LT_Higgs' : (10, 200, "L_{T} #tau1 #tau2", "(GeV)", "x"),
                    'Mass' : (20, 800, "Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}", "(GeV)", "x"),
                    'mva_metEt' : (60/KSRebin_, 300, "mva metEt", "(GeV)", "x"),
@@ -242,7 +255,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
                   my_red_combined.Add(new_my_red)
               
               c2 = plotter.getCanvas()
-              plotter.setTDRStyle(c2, 19.7, 8, "left") 
+              plotter.setTDRStyle() 
               pad2 = ROOT.TPad("pad2","",0,0.2,1,1)
               pad2.Draw()
               pad2.cd()
@@ -372,13 +385,18 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           #    print "Bin %2i : %6.4f / %8.4f = %6.4f" % (iii, A_300, backGrnd, 100*A_300/backGrnd )
           #print "Total Signal to Background: %6.4f / %8.4f = %8.4f   ---   data: %i" % (iii_A300, iii_backGrnd, 100*iii_A300/iii_backGrnd, iii_data)
   
-          if my_data.GetMaximum() > my_total.GetMaximum():
-            my_total.SetMaximum( 1.3 * my_data.GetMaximum() )
-          else: my_total.SetMaximum( 1.3 * my_total.GetMaximum() )
-          #my_total.SetMaximum(17) #XXX#
-          ###if my_data.GetMaximum() > my_total.GetMaximum():
-          ###  my_total.SetMaximum( 3.2 * my_data.GetMaximum() )
-          ###else: my_total.SetMaximum( 3.2 * my_total.GetMaximum() )
+          ''' Set maximum considering error bar height on data '''
+          dataMax = my_data.GetMaximum()
+          dataMaxBin = my_data.GetMaximumBin() 
+          dataError = my_data.GetBinError( dataMaxBin )
+          dataMaxPlusError = dataMax + dataError
+          bkgMax = my_total.GetMaximum()
+          if dataMax > bkgMax:
+              my_total.SetMaximum( 1.3 * dataMax )
+          else: my_total.SetMaximum( 1.3 * bkgMax )
+          if my_total.GetMaximum() < dataMaxPlusError:
+              my_total.SetMaximum( dataMaxPlusError )
+
           my_A300.SetStats(0)
           #print "My Total Int: %f" % my_total.GetStack().Last().Integral()
           my_data.Draw("e1 same")
@@ -392,7 +410,8 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           legend.AddEntry( my_data, "Data", "lep")
           legend.AddEntry( my_A300, "%i x A%s, xsec=1fb" % (A300Scaling, AZhSample[-3::]), 'l')
           for j in range(0, my_total.GetStack().GetLast() + 1):
-              legend.AddEntry( my_total.GetStack()[j], my_total.GetStack()[j].GetTitle(), 'f')
+              last = my_total.GetStack().GetLast()
+              legend.AddEntry( my_total.GetStack()[ last - j], my_total.GetStack()[last - j].GetTitle(), 'f')
           legend.AddEntry( errorPlot, errorPlot.GetTitle(), "f") 
           legend.Draw()
 
@@ -405,12 +424,16 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
               my_total.GetXaxis().SetRange(0, 36)
           if run_map[key][i][0] == 'Mass' and run_map[key][i][2] == "z":
               my_total.GetXaxis().SetRange(5, 15)
-          plotter.setTDRStyle(c3, 19.7, 8, "left") 
+          plotter.printLumi(c3, 19.7, 8, "left") 
   
-          if txtLabel:
-              txtLow = 5
-              txt = ROOT.TText(txtLow, my_data.GetMaximum()*1.2, "Channels: %s" % ChanKey_ )
-              txt.Draw()
+ #         c3.cd()
+ #         if txtLabel:
+ #             #txtLow = 5
+ #             txtLow = my_data.GetXaxis().GetBinUpEdge(1)
+ #             print txtLow
+ #             txtChan = ROOT.TText(txtLow, my_data.GetMaximum()*1.2, "Channels: %s" % ChanKey_ )
+ #             txtChan.Draw()
+ #         c3.Update()
 
           ''' Adjusts the location of the X axis title,
           this is difficult because you can't accest a THStacks'
@@ -419,11 +442,12 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           ROOT.gPad.Modified()
           ROOT.gPad.Update()
   
-          c3.SaveAs("plots/background/%s.pdf" % fileName)
-          c3.SaveAs("plots/background/%s.root" % fileName)
+          c3.SaveAs("plots/background/pdf/%s.pdf" % fileName)
+          c3.SaveAs("plots/background/root/%s.root" % fileName)
           c3.SaveAs("plots/background/png/%s.png" % fileName)
           if KSTest_:
-            c3.SaveAs("plots/KS-Testing/%s%s_N_%i_Bin_%i.png" % (postFit, variable, iii_data, 5*KSRebin_))
+            c3.SaveAs("plots/KS-Testing/png/%s%s_N_%i_Bin_%i.png" % (postFit, variable, iii_data, 5*KSRebin_))
+            c3.SaveAs("plots/KS-Testing/pdf/%s%s_N_%i_Bin_%i.pdf" % (postFit, variable, iii_data, 5*KSRebin_))
 #          if run_map[key][i][0] == 'mva_metEt':
 #              pad5.SetLogy()
 #              if my_data.GetMaximum() > my_total.GetMaximum():
@@ -452,6 +476,15 @@ def makeKSandChiSqPlots():
 
 norm = getNormalization('PFCards/cards', '300')
 #print norm.keys()
-chan = ['eeem', 'mmme']
-makePlots('ZChannelsMM', True, **norm)
-makePlots('AllChannels', True, **norm)
+#chan = ['eeem', 'mmme']
+#makePlots('ZChannelsMM', True, **norm)
+#makePlots('AllChannels', True, **norm)
+for combo in chan_map.keys():
+    makePlots( combo , True, **norm)
+
+
+
+
+
+
+
