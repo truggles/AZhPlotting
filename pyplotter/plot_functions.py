@@ -89,11 +89,14 @@ def makeStackPlots (stacked, unstacked, hist_opts, plot_info):
     #legend.Draw("same")
     canvas.Print(plot_info["output_file"]) 
 
-def setTDRStyle(canvas, luminosity, energy, printCMS):
+#def setTDRStyle(canvas, luminosity, energy, printCMS, channels='None'):
+def setTDRStyle():
     tdrstyle.setTDRStyle() 
+
+def printLumi(canvas, luminosity, energy, printCMS):
     if printCMS == "right" or printCMS == "left":
-        #if energy == 13:
-        CMS_lumi.lumi_8TeV = "%s fb^{-1}" % luminosity
+        if energy == 13:
+            CMS_lumi.lumi_8TeV = "%s fb^{-1}" % luminosity
         if printCMS == "left":
             iPos = 11
         else:
@@ -101,9 +104,10 @@ def setTDRStyle(canvas, luminosity, energy, printCMS):
         CMS_lumi.writeExtraText = 1
         CMS_lumi.extraText = "Preliminary"
         CMS_lumi.CMS_lumi(canvas, 2, iPos)
+
 def getCanvas():
-    H_ref = 800; 
-    W_ref = 800; 
+    H_ref = 600; 
+    W_ref = 600; 
     W = W_ref
     H  = H_ref
 
