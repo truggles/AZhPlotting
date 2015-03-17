@@ -72,18 +72,18 @@ hChannelsTT = ['eett', 'mmtt']
 
 
 #            Channel str     Channel List, List for varialbes_map and title for the associated histo
-run_map = { "AllChannels" : (AllChannels, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('Mass', 'Visible Mass_{#tau^{+}#tau^{-}}', 'h'),
-                                          ('Mass', 'Mass_{l^{+}l^{-}}', 'z'),
-                                          ('LT_Higgs', 'L_{T} #tau_{1} #tau_{2}', 'all'),
-                                          ('mva_metEt', 'mva metEt', 'all'),
-                                          ('A_SVfitMass', 'Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('SVfitMass', 'Mass_{#tau^{+}#tau^{-}}', 'h'),
+run_map = { "AllChannels" : (AllChannels, ('Mass', 'Visible Mass l^{+}l^{-}#tau^{+}_{h}#tau^{-}_{h}', 'all'),
+                                          ('Mass', 'Visible Mass #tau^{+}_{h}#tau^{-}_{h}', 'h'),
+                                          ('Mass', 'Mass l^{+}l^{-}', 'z'),
+                                          ('LT_Higgs', 'L_{T} #tau^{+}_{h} #tau^{-}_{h}', 'all'),
+                                          ('mva_metEt', 'mva #slash{E}_{T}', 'all'),
+                                          ('A_SVfitMass', 'Mass l^{+}l^{-}#tau^{+}_{h}#tau^{-}_{h}', 'all'),
+                                          ('SVfitMass', 'Mass #tau^{+}_{h}#tau^{-}_{h}', 'h'),
                                           ('Pt', '#tau_{1} P_{T}', 2),
                                           ('Pt', '#tau_{2} P_{T}', 3),
-                                          ('Pt', 'Lepton_{1} P_{T}', 0),
-                                          ('Pt', 'Lepton_{2} P_{T}', 1),
-                                          ('Pt', 'Vector Sum P_{T}_{#tau^{+}#tau^{-}}', 'h'),
+                                          ('Pt', 'l_{1} P_{T}', 0),
+                                          ('Pt', 'l_{2} P_{T}', 1),
+                                          ('Pt', '#Sigma #vec{P_{T}} #tau^{+}_{h}#tau^{-}_{h}', 'h'),
                                           ('Pt', '#Sigma #vec{P_{T}} l^{+}l^{-}', 'z'), ),
             "ZChannelsEE" : (ZChannelsEE, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
                                           ('Mass', 'Mass_{l^{+}l^{-}}', 'z'),
@@ -189,7 +189,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           my_WZZ = ROOT.TH1F("my_WZZ", "WZZ", varBin, 0, varRange)
           my_WWZ = ROOT.TH1F("my_WWZ", "WWZ", varBin, 0, varRange)
           my_Zjets = ROOT.TH1F("my_Zjets", "Zjets", varBin, 0, varRange)
-          my_A300 = ROOT.TH1F("my_A300", "%i x A300, xsec=1fb" % A300Scaling, varBin, 0, varRange)
+          my_A300 = ROOT.TH1F("my_A300", "%i x A300, #sigma=1fb" % A300Scaling, varBin, 0, varRange)
           
           for sample in ['ZH_ww125', 'ZH_tt125', 'TTZ', 'GGToZZ2L2L', 'ZZZ', 'WZZ', 'WWZ', 'ZZ', 'Zjets', AZhSample, 'data_obs']:
               #print sample
@@ -360,11 +360,10 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
             pad5.Update()
           else: my_total.Draw("hist")
 
-          my_total.GetYaxis().SetTitle("Events / %i GeV" % (variables_map[variable][1]/variables_map[variable][0]) )
+          my_total.GetYaxis().SetTitle("Events / %i GeV" % ( int(my_total.GetStack().Last().GetBinWidth(1) ) ) )
           my_total.GetXaxis().SetTitle("%s %s" % (run_map[key][i][1], variables_map[variable][3]) )
           my_A300.SetLineWidth(2)
           my_A300.SetLineColor(ROOT.kOrange+10)
-          #my_A300.SetLineColor(ROOT.kOrange)
           my_A300.Draw("hist same")
   
           ''' Used for calculating Signal / Background, lots of print out
@@ -408,11 +407,11 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           my_data.SetMarkerSize(.8)
 
           ''' Build the legend explicitly so we can specify marker styles '''
-          legend = ROOT.TLegend(0.66, 0.55, 0.93, 0.89)
+          legend = ROOT.TLegend(0.72, 0.55, 0.93, 0.89)
           legend.SetMargin(0.3)
           legend.SetBorderSize(0)
           legend.AddEntry( my_data, "Data", "lep")
-          legend.AddEntry( my_A300, "%i x A%s, xsec=1fb" % (A300Scaling, AZhSample[-3::]), 'l')
+          legend.AddEntry( my_A300, "%i x A%s, #sigma=1fb" % (A300Scaling, AZhSample[-3::]), 'l')
           for j in range(0, my_total.GetStack().GetLast() + 1):
               last = my_total.GetStack().GetLast()
               legend.AddEntry( my_total.GetStack()[ last - j], my_total.GetStack()[last - j].GetTitle(), 'f')
@@ -483,10 +482,10 @@ def makeKSandChiSqPlots():
 norm = getNormalization('PFCards/cards', '300')
 #print norm.keys()
 #chan = ['eeem', 'mmme']
-makePlots('ZChannelsMM', True, **norm)
-makePlots('AllChannels', True, **norm)
-#for combo in chan_map.keys():
-#    makePlots( combo , True, **norm)
+#makePlots('hChannelsEM', True, **norm)
+#makePlots('AllChannels', True, **norm)
+for combo in chan_map.keys():
+    makePlots( combo , True, **norm)
 
 
 
