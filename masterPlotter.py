@@ -55,7 +55,7 @@ samples = { 'Zjets' : ("kCyan+1", "kMagenta+1", 21),
             'GGToZZ2L2L' : ("kMagenta+1", "kRed-2", 21), 
             'TTZ' : ("kTeal+1", "kCyan-2", 21),
             'ZH_tt125' : ("kPink+9", "kMagenta-2", 21),
-            'ZH_ww125' : ("kOrange+10", "kYellow-2", 21),
+            'ZH_ww125' : ("kOrange", "kYellow-2", 21),
             AZhSample : ("kBlue", "kBlue", 21),
             'data_obs' : ("","")
 }
@@ -161,7 +161,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           print "%s %s" % (variable, run_map[key][i][2]) 
           if KSTest_ and not variable == "mva_metEt": continue
           else: pass 
-          if not (variable == 'A_SVfitMass'): continue # or variable == 'Mass'): continue
+#          if not (variable == 'A_SVfitMass'): continue # or variable == 'Mass'): continue
           if variable == 'Mass' and run_map[key][i][2] == 'h':
               varRange = 300
               varBin = 10
@@ -364,6 +364,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           my_total.GetXaxis().SetTitle("%s %s" % (run_map[key][i][1], variables_map[variable][3]) )
           my_A300.SetLineWidth(2)
           my_A300.SetLineColor(ROOT.kOrange+10)
+          #my_A300.SetLineColor(ROOT.kOrange)
           my_A300.Draw("hist same")
   
           ''' Used for calculating Signal / Background, lots of print out
@@ -386,8 +387,11 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           #print "Total Signal to Background: %6.4f / %8.4f = %8.4f   ---   data: %i" % (iii_A300, iii_backGrnd, 100*iii_A300/iii_backGrnd, iii_data)
   
           ''' Set maximum considering error bar height on data '''
+          cmsLumiScale = 1 # this is to adjust the histo max so that the data doesn't cover the 'CMS Prelim'
           dataMax = my_data.GetMaximum()
-          dataMaxBin = my_data.GetMaximumBin() 
+          dataMaxBin = my_data.GetMaximumBin()
+          if dataMaxBin < 5:
+              cmsLumiScale = 1.2
           dataError = my_data.GetBinError( dataMaxBin )
           dataMaxPlusError = dataMax + dataError
           bkgMax = my_total.GetMaximum()
@@ -395,7 +399,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
               my_total.SetMaximum( 1.3 * dataMax )
           else: my_total.SetMaximum( 1.3 * bkgMax )
           if my_total.GetMaximum() < dataMaxPlusError:
-              my_total.SetMaximum( dataMaxPlusError )
+              my_total.SetMaximum( dataMaxPlusError * cmsLumiScale )
 
           my_A300.SetStats(0)
           #print "My Total Int: %f" % my_total.GetStack().Last().Integral()
