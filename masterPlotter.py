@@ -75,16 +75,16 @@ hChannelsTT = ['eett', 'mmtt']
 run_map = { "AllChannels" : (AllChannels, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
                                           ('Mass', 'Visible Mass_{#tau^{+}#tau^{-}}', 'h'),
                                           ('Mass', 'Mass_{l^{+}l^{-}}', 'z'),
-                                          ('LT_Higgs', 'L_{T} #tau1 #tau2', 'all'),
+                                          ('LT_Higgs', 'L_{T} #tau_{1} #tau_{2}', 'all'),
                                           ('mva_metEt', 'mva metEt', 'all'),
                                           ('A_SVfitMass', 'Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
                                           ('SVfitMass', 'Mass_{#tau^{+}#tau^{-}}', 'h'),
-                                          ('Pt', '#tau1 Pt', 2),
-                                          ('Pt', '#tau2 Pt', 3),
-                                          ('Pt', 'Lepton1 Pt', 0),
-                                          ('Pt', 'Lepton2 Pt', 1),
-                                          ('Pt', 'Vector Sum Pt_{#tau^{+}#tau^{-}}', 'h'),
-                                          ('Pt', 'Vector Sum Pt_{l^{+}l^{-}}', 'z'), ),
+                                          ('Pt', '#tau_{1} P_{T}', 2),
+                                          ('Pt', '#tau_{2} P_{T}', 3),
+                                          ('Pt', 'Lepton_{1} P_{T}', 0),
+                                          ('Pt', 'Lepton_{2} P_{T}', 1),
+                                          ('Pt', 'Vector Sum P_{T}_{#tau^{+}#tau^{-}}', 'h'),
+                                          ('Pt', '#Sigma #vec{P_{T}} l^{+}l^{-}', 'z'), ),
             "ZChannelsEE" : (ZChannelsEE, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
                                           ('Mass', 'Mass_{l^{+}l^{-}}', 'z'),
                                           ('mva_metEt', 'mva metEt', 'all'),
@@ -360,7 +360,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
             pad5.Update()
           else: my_total.Draw("hist")
 
-          my_total.GetYaxis().SetTitle("Events / %i %s" % ( (variables_map[variable][1]/variables_map[variable][0]), variables_map[variable][3] ) )
+          my_total.GetYaxis().SetTitle("Events / %i GeV" % (variables_map[variable][1]/variables_map[variable][0]) )
           my_total.GetXaxis().SetTitle("%s %s" % (run_map[key][i][1], variables_map[variable][3]) )
           my_A300.SetLineWidth(2)
           my_A300.SetLineColor(ROOT.kOrange+10)
