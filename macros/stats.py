@@ -9,12 +9,13 @@ def ChiSqProb( ChiSq_, n_ ):
     import math
     from scipy import special
     from scipy.integrate import quad
+    import numpy
     n = n_
     ChiSq = ChiSq_
     def integrand(x):
         return ( 2**(-n/2) * math.sqrt( x )**(n - 2) * math.exp( -x / 2 ) ) / special.gamma( n / 2 )
 
-    ans, err = quad(integrand, ChiSq, 1000)
+    ans, err = quad(integrand, ChiSq, numpy.inf)
     return ans
 
 #    Set us up to run a KS test AND Chi Squared test on mvamet
@@ -45,15 +46,29 @@ def runKSandChiSqTest(variable, data, mcHists, varBin, varRange, numBins, KSRebi
         ks_data += (dataNum/ks_dataT)
         ksTestMC.SetBinContent(jjj, ks_mc)
         ksTestData.SetBinContent(jjj, ks_data)
-        ChiSq += (dataNum - mcNum)**2 / mcNum
+        #ChiSq += (dataNum - mcNum)**2 / mcNum
+        if dataNum > 0:
+            ChiSq += (dataNum - mcNum)**2 / data.GetBinError(jjj)
+        else:
+            ChiSq += (dataNum - mcNum)**2 / 1.8 # See Bhawna email about error in bins w/ zero data 'Clopper Pearson'
         if (math.fabs( ks_mc - ks_data ) > maxDiff):
             maxDiff = math.fabs( ks_mc - ks_data )
-        print "bin : %i mc: %f data: %f MaxDiff: %f" % (jjj, ks_mc, ks_data, maxDiff)
+#        print "bin : %i mc: %f data: %f MaxDiff: %f" % (jjj, ks_mc, ks_data, maxDiff)
     print "D = %f" % maxDiff
     print "D*SQRT(N) = %f * %f = %f" % (maxDiff, math.sqrt(ks_dataT), maxDiff * math.sqrt(ks_dataT))
     zKS = ( math.sqrt( ks_dataT ) + 0.12 + ( 0.11/math.sqrt( ks_dataT ) ) ) * maxDiff
     print "Z = %f" % zKS
-    print "Chi Squared = %f" % ChiSq
+    print "My Chi Squared = %f" % ChiSq
+    ChiSq2 = mcHists.GetStack().Last().Chi2Test( data, "CHI2" )
+    print "ROOT's Chi Squared = %f" % ChiSq2
+    ROOTChiP1 = mcHists.GetStack().Last().Chi2Test( data, "P" )
+    ROOTChiP2 = mcHists.GetStack().Last().Chi2Test( data, "UW" )
+    ROOTChiP3 = data.Chi2Test( mcHists.GetStack().Last(), "P")
+    ROOTChiP4 = data.Chi2Test( mcHists.GetStack().Last(), "UW" )
+    print "mc->data ROOT's Chi Squared P Val = %f" % ROOTChiP1
+    print "date->mc ROOT's Chi Squared P Val = %f" % ROOTChiP2
+    print "ROOT's Chi Squared P Val (exp vs mc) = %f" % ROOTChiP3
+    print "ROOT's Chi Squared P Val = %f" % ROOTChiP4
     Q_ks = 0
     qqq = 1
     keepGoing = True
@@ -75,7 +90,7 @@ def runKSandChiSqTest(variable, data, mcHists, varBin, varRange, numBins, KSRebi
     ksTestMC.Draw("hist")
     ksTestData.Draw("hist same")
     ROOT.gPad.Update()
-    leg = pad7.BuildLegend(0.60, 0.50, 0.93, 0.58)
+    leg = pad7.BuildLegend(0.60, 0.7, 0.93, 0.77)
     leg.SetMargin(0.3)
     #leg.SetFillColor(0)
     #leg.SetBorderSize(0)
@@ -85,16 +100,17 @@ def runKSandChiSqTest(variable, data, mcHists, varBin, varRange, numBins, KSRebi
     txt = ROOT.TText(.9, 1.07, "CMS Preliminary, K-S Test CDFs of MC & Data" )
     txt.SetTextSize(.04)
     txt.Draw()
-    txtB = ROOT.TPaveText(150, 0.19, 300, .45)
+    txtB = ROOT.TPaveText(150, 0.1, 300, .6)
     txtB.AddText("KS & ChiSq Statistics Summary:")
     txtB.AddText("N = %i" % ks_dataT)
     txtB.AddText("D = %f" % maxDiff)
     txtB.AddText("Z = %f" % zKS)
-    txtB.AddText("p Value = %f" % Q_ks)
+    txtB.AddText("KS Test p Value = %f" % Q_ks)
     txtB.AddText("Chi Squared = %f" % ChiSq)
     ChiProb = ChiSqProb( ChiSq, ks_dataT )
     print "Chi Squared Probability = %f" % ChiProb
-    txtB.AddText("Chi Squared Probability = %f" % ChiProb )
+    txtB.AddText("Tylers Chi Squared Probability = %f" % ChiProb )
+    txtB.AddText("ROOT Chi Squared Probability = %f" % ROOTChiP )
     txtB.Draw()
     ROOT.gPad.Update()
     fileNameKS = "KS_%s_N_%i_Bin_%i" % (variable, ks_dataT, 5*KSRebin)
