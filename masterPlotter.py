@@ -72,69 +72,19 @@ hChannelsTT = ['eett', 'mmtt']
 
 
 #            Channel str     Channel List, List for varialbes_map and title for the associated histo
-run_map = { "AllChannels" : (AllChannels, ('Mass', 'Visible Mass l^{+}l^{-}#tau^{+}_{h}#tau^{-}_{h}', 'all'),
-                                          ('Mass', 'Visible Mass #tau^{+}_{h}#tau^{-}_{h}', 'h'),
+run_map = { "AllChannels" : (AllChannels, ('Mass', 'Visible Mass l^{+}l^{-}#tau^{+}#tau^{-}', 'all'),
+                                          ('Mass', 'Visible Mass #tau^{+}#tau^{-}', 'h'),
                                           ('Mass', 'Mass l^{+}l^{-}', 'z'),
-                                          ('LT_Higgs', 'L_{T} #tau^{+}_{h} #tau^{-}_{h}', 'all'),
+                                          ('LT_Higgs', 'L_{T} #tau^{+}#tau^{-}', 'all'),
                                           ('mva_metEt', 'mva #slash{E}_{T}', 'all'),
-                                          ('A_SVfitMass', 'Mass l^{+}l^{-}#tau^{+}_{h}#tau^{-}_{h}', 'all'),
-                                          ('SVfitMass', 'Mass #tau^{+}_{h}#tau^{-}_{h}', 'h'),
+                                          ('A_SVfitMass', 'Mass l^{+}l^{-}#tau^{+}#tau^{-}', 'all'),
+                                          ('SVfitMass', 'Mass #tau^{+}#tau^{-}', 'h'),
                                           ('Pt', '#tau_{1} P_{T}', 2),
                                           ('Pt', '#tau_{2} P_{T}', 3),
                                           ('Pt', 'l_{1} P_{T}', 0),
                                           ('Pt', 'l_{2} P_{T}', 1),
-                                          ('Pt', '#Sigma #vec{P_{T}} #tau^{+}_{h}#tau^{-}_{h}', 'h'),
-                                          ('Pt', '#Sigma #vec{P_{T}} l^{+}l^{-}', 'z'), ),
-            "ZChannelsEE" : (ZChannelsEE, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('Mass', 'Mass_{l^{+}l^{-}}', 'z'),
-                                          ('mva_metEt', 'mva metEt', 'all'),
-                                          ('A_SVfitMass', 'Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('Pt', 'Lepton1 Pt', 0),
-                                          ('Pt', 'Lepton2 Pt', 1),
-                                          ('Pt', 'Vector Sum Pt_{l^{+}l^{-}}', 'z'), ),
-            "ZChannelsMM" : (ZChannelsMM, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('Mass', 'Mass_{l^{+}l^{-}}', 'z'),
-                                          ('mva_metEt', 'mva metEt', 'all'),
-                                          ('A_SVfitMass', 'Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('Pt', 'Lepton1 Pt', 0),
-                                          ('Pt', 'Lepton2 Pt', 1),
-                                          ('Pt', 'Vector Sum Pt_{l^{+}l^{-}}', 'z'), ),
-            "hChannelsEM" : (hChannelsEM, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('Mass', 'Visible Mass_{#tau^{+}#tau^{-}}', 'h'),
-                                          ('LT_Higgs', 'L_{T} #tau1 #tau2', 'all'),
-                                          ('mva_metEt', 'mva metEt', 'all'),
-                                          ('A_SVfitMass', 'Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('SVfitMass', 'Mass_{#tau^{+}#tau^{-}}', 'h'),
-                                          ('Pt', '#tau1 Pt', 2),
-                                          ('Pt', '#tau2 Pt', 3),
-                                          ('Pt', 'Vector Sum Pt_{#tau^{+}#tau^{-}}', 'h'), ),
-            "hChannelsET" : (hChannelsET, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('Mass', 'Visible Mass_{#tau^{+}#tau^{-}}', 'h'),
-                                          ('LT_Higgs', 'L_{T} #tau1 #tau2', 'all'),
-                                          ('mva_metEt', 'mva metEt', 'all'),
-                                          ('A_SVfitMass', 'Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('SVfitMass', 'Mass_{#tau^{+}#tau^{-}}', 'h'),
-                                          ('Pt', '#tau1 Pt', 2),
-                                          ('Pt', '#tau2 Pt', 3),
-                                          ('Pt', 'Vector Sum Pt_{#tau^{+}#tau^{-}}', 'h'), ),
-            "hChannelsMT" : (hChannelsMT, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('Mass', 'Visible Mass_{#tau^{+}#tau^{-}}', 'h'),
-                                          ('LT_Higgs', 'L_{T} #tau1 #tau2', 'all'),
-                                          ('mva_metEt', 'mva metEt', 'all'),
-                                          ('A_SVfitMass', 'Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('SVfitMass', 'Mass_{#tau^{+}#tau^{-}}', 'h'),
-                                          ('Pt', '#tau1 Pt', 2),
-                                          ('Pt', '#tau2 Pt', 3),
-                                          ('Pt', 'Vector Sum Pt_{#tau^{+}#tau^{-}}', 'h'), ),
-            "hChannelsTT" : (hChannelsTT, ('Mass', 'Visible Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('Mass', 'Visible Mass_{#tau^{+}#tau^{-}}', 'h'),
-                                          ('LT_Higgs', 'L_{T} #tau1 #tau2', 'all'),
-                                          ('mva_metEt', 'mva metEt', 'all'),
-                                          ('A_SVfitMass', 'Mass_{l^{+}l^{-}#tau^{+}#tau^{-}}', 'all'),
-                                          ('SVfitMass', 'Mass_{#tau^{+}#tau^{-}}', 'h'),
-                                          ('Pt', '#tau1 Pt', 2),
-                                          ('Pt', '#tau2 Pt', 3),
-                                          ('Pt', 'Vector Sum Pt_{#tau^{+}#tau^{-}}', 'h'), ),
+                                          ('Pt', '#Sigma #vec{P_{T}} #tau^{+}#tau^{-}', 'h'),
+                                          ('Pt', '#Sigma #vec{P_{T}} l^{+}l^{-}', 'z'), )
 }
 
 def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=4, Cards_='Official', **normMap):
@@ -321,7 +271,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           c3 = plotter.getCanvas() # Use Kenneth's canvas setup
           pad5 = ROOT.TPad("pad5","",0,0,1,1)
           pad5.Draw()
-          pad5.SetGridy(1)
+          #pad5.SetGridy(1)
           pad5.cd()
 
           ''' Error bar work '''
@@ -369,18 +319,18 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           ''' Used for calculating Signal / Background, lots of print out
           so it's commented out now days. '''
           numBins = my_A300.GetXaxis().GetNbins()
-          #iii_A300 = 0
-          #iii_backGrnd = 0
-          #iii_data = 0
-          #for iii in range (1, numBins + 2):
-          #  #print "A300 bin %i: %f" % (iii, my_A300.GetBinContent(iii)/A300Scaling )
-          #  #print "Back bin %i: %f" % (iii, my_total.GetStack().Last().GetBinContent(iii) )
-          #  A_300 = my_A300.GetBinContent(iii)/A300Scaling
-          #  backGrnd = my_total.GetStack().Last().GetBinContent(iii)
-          #  data_ = my_data.GetBinContent(iii)
-          #  iii_data += data_
-          #  iii_A300 += A_300
-          #  iii_backGrnd += backGrnd
+          iii_A300 = 0
+          iii_backGrnd = 0
+          iii_data = 0
+          for iii in range (1, numBins + 2):
+            #print "A300 bin %i: %f" % (iii, my_A300.GetBinContent(iii)/A300Scaling )
+            #print "Back bin %i: %f" % (iii, my_total.GetStack().Last().GetBinContent(iii) )
+            A_300 = my_A300.GetBinContent(iii)/A300Scaling
+            backGrnd = my_total.GetStack().Last().GetBinContent(iii)
+            data_ = my_data.GetBinContent(iii)
+            iii_data += data_
+            iii_A300 += A_300
+            iii_backGrnd += backGrnd
           #  if backGrnd > 0.0:
           #    print "Bin %2i : %6.4f / %8.4f = %6.4f" % (iii, A_300, backGrnd, 100*A_300/backGrnd )
           #print "Total Signal to Background: %6.4f / %8.4f = %8.4f   ---   data: %i" % (iii_A300, iii_backGrnd, 100*iii_A300/iii_backGrnd, iii_data)
@@ -448,7 +398,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           ROOT.gPad.Update()
   
           c3.SaveAs("plots/background/pdf/%s.pdf" % fileName)
-          c3.SaveAs("plots/background/root/%s.root" % fileName)
+          #c3.SaveAs("plots/background/root/%s.root" % fileName)
           c3.SaveAs("plots/background/png/%s.png" % fileName)
           if KSTest_:
             c3.SaveAs("plots/KS-Testing/png/%s%s_N_%i_Bin_%i.png" % (postFit, variable, iii_data, 5*KSRebin_))
@@ -466,8 +416,8 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
             runKSandChiSqTest( variable, my_data, my_total, varBin, varRange, numBins, KSRebin_)
 
 chan_map = { 'AllChannels' : ('mmtt', 'eett', 'mmmt', 'eemt', 'mmet', 'eeet', 'mmme', 'eeem'),
-         'ZChannelsEE' : ('eett', 'eemt', 'eeet', 'eeem'),
-         'ZChannelsMM' : ('mmtt', 'mmmt', 'mmet', 'mmme'),
+#         'ZChannelsEE' : ('eett', 'eemt', 'eeet', 'eeem'),
+#         'ZChannelsMM' : ('mmtt', 'mmmt', 'mmet', 'mmme'),
          'hChannelsEM' : ('eeem', 'mmme'),
          'hChannelsET' : ('eeet', 'mmet'),
          'hChannelsMT' : ('eemt', 'mmmt'),
@@ -476,16 +426,19 @@ chan_map = { 'AllChannels' : ('mmtt', 'eett', 'mmmt', 'eemt', 'mmet', 'eeet', 'm
 def makeKSandChiSqPlots():
   KSTest = True
   for binning in [1, 2, 3, 4, 6, 12]:
-    makePlots( KSTest, binning, 'Official')
-    makePlots( KSTest, binning, 'hSVFit')
+    makePlots( 'AllChannels', True, KSTest, binning, 'Official', **norm )
+    makePlots( 'AllChannels', True, KSTest, binning, 'hSVFit', **norm )
 
 norm = getNormalization('PFCards/cards', '300')
+makePlots( 'AllChannels', True, True, 2, 'hSVFit', **norm )
+#makeKSandChiSqPlots()
+
 #print norm.keys()
 #chan = ['eeem', 'mmme']
 #makePlots('hChannelsEM', True, **norm)
 #makePlots('AllChannels', True, **norm)
-for combo in chan_map.keys():
-    makePlots( combo , True, **norm)
+#for combo in chan_map.keys():
+#    makePlots( combo , True, **norm )
 
 
 
