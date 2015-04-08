@@ -361,7 +361,7 @@ def makePlots(ChanKey_ = 'AllChannels', PostFit_=False, KSTest_=False, KSRebin_=
           legend.SetMargin(0.3)
           legend.SetBorderSize(0)
           legend.AddEntry( my_data, "Data", "lep")
-          legend.AddEntry( my_A300, "%i x A%s, #sigma=1fb" % (A300Scaling, AZhSample[-3::]), 'l')
+          legend.AddEntry( my_A300, "%i x A%s, #sigma=1pb" % (A300Scaling, AZhSample[-3::]), 'l')
           for j in range(0, my_total.GetStack().GetLast() + 1):
               last = my_total.GetStack().GetLast()
               legend.AddEntry( my_total.GetStack()[ last - j], my_total.GetStack()[last - j].GetTitle(), 'f')
