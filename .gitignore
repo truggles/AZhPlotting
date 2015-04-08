@@ -8,3 +8,4 @@ pyplotter/*.pyc
 *.root
 *.png
 cutFlowDir/*
+.DS_store
