@@ -5,12 +5,12 @@
 
 #    Return the Chi Squared Probability for a given Chi Squared 
 #    value 'ChiSq_' and a number of samples 'n_'
-def ChiSqProb( ChiSq_, n_ ):
+def ChiSqProb( ChiSq_, degOfFreedom_ ):
     import math
     from scipy import special
     from scipy.integrate import quad
     import numpy
-    n = n_
+    n = degOfFreedom_
     ChiSq = ChiSq_
     def integrand(x):
         return ( 2**(-n/2) * math.sqrt( x )**(n - 2) * math.exp( -x / 2 ) ) / special.gamma( n / 2 )
@@ -61,14 +61,17 @@ def runKSandChiSqTest(variable, data, mcHists, varBin, varRange, numBins, KSRebi
     print "My Chi Squared = %f" % ChiSq
     ChiSq2 = mcHists.GetStack().Last().Chi2Test( data, "CHI2" )
     print "ROOT's Chi Squared = %f" % ChiSq2
-    ROOTChiP1 = mcHists.GetStack().Last().Chi2Test( data, "P" )
-    ROOTChiP2 = mcHists.GetStack().Last().Chi2Test( data, "UW" )
-    ROOTChiP3 = data.Chi2Test( mcHists.GetStack().Last(), "P")
-    ROOTChiP4 = data.Chi2Test( mcHists.GetStack().Last(), "UW" )
-    print "mc->data ROOT's Chi Squared P Val = %f" % ROOTChiP1
-    print "date->mc ROOT's Chi Squared P Val = %f" % ROOTChiP2
-    print "ROOT's Chi Squared P Val (exp vs mc) = %f" % ROOTChiP3
-    print "ROOT's Chi Squared P Val = %f" % ROOTChiP4
+    #ChiProb0 = ChiSqProb( ChiSq2, ks_dataT )
+    ChiProb0 = ChiSqProb( ChiSq2, numBins-1 )
+    print "my Prob on Root X^2 Chi Squared Probability = %f" % ChiProb0
+    ROOTChiP = mcHists.GetStack().Last().Chi2Test( data, "P" )
+#    ROOTChiP2 = mcHists.GetStack().Last().Chi2Test( data, "UW" )
+#    ROOTChiP3 = data.Chi2Test( mcHists.GetStack().Last(), "P")
+#    ROOTChiP4 = data.Chi2Test( mcHists.GetStack().Last(), "UW" )
+#    print "mc->data ROOT's Chi Squared P Val = %f" % ROOTChiP1
+#    print "date->mc ROOT's Chi Squared P Val = %f" % ROOTChiP2
+#    print "ROOT's Chi Squared P Val (exp vs mc) = %f" % ROOTChiP3
+#    print "ROOT's Chi Squared P Val = %f" % ROOTChiP4
     Q_ks = 0
     qqq = 1
     keepGoing = True
@@ -107,7 +110,8 @@ def runKSandChiSqTest(variable, data, mcHists, varBin, varRange, numBins, KSRebi
     txtB.AddText("Z = %f" % zKS)
     txtB.AddText("KS Test p Value = %f" % Q_ks)
     txtB.AddText("Chi Squared = %f" % ChiSq)
-    ChiProb = ChiSqProb( ChiSq, ks_dataT )
+    #ChiProb = ChiSqProb( ChiSq, ks_dataT )
+    ChiProb = ChiSqProb( ChiSq, numBins-1 )
     print "Chi Squared Probability = %f" % ChiProb
     txtB.AddText("Tylers Chi Squared Probability = %f" % ChiProb )
     txtB.AddText("ROOT Chi Squared Probability = %f" % ROOTChiP )

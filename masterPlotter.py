@@ -430,7 +430,7 @@ def makeKSandChiSqPlots():
     makePlots( 'AllChannels', True, KSTest, binning, 'hSVFit', **norm )
 
 norm = getNormalization('PFCards/cards', '300')
-makePlots( 'AllChannels', True, True, 2, 'hSVFit', **norm )
+makePlots( 'AllChannels', True, True, 4, 'hSVFit', **norm )
 #makeKSandChiSqPlots()
 
 #print norm.keys()
