@@ -6,3 +6,5 @@ test*
 macros/oldOrArchive/*
 pyplotter/*.pyc
 *.root
+*.png
+cutFlowDir/*
