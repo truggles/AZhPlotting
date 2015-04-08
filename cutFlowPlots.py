@@ -4,6 +4,7 @@ import pyplotter.plot_functions as plotter
 from ROOT import gROOT
 from ROOT import gStyle
 
+plotter.setTDRStyle() 
 scale = 15
 cmsLumi = 19.7 * 1000
 
@@ -20,10 +21,18 @@ sampMap = { # file name : Fill Color : LumiCalc : Total DAS Events
     'data' : ('xxx', 'xxx', 999, 999) 
     }
 
+
+ZjetsMap = {'mmtt' :  2.01766, 
+    'eett' :  2.10608,
+    'mmmt' :  2.94444,
+    'eemt' :  1.88202,
+    'mmet' :  3.69516,
+    'eeet' :  2.02603,
+    'mmme' :  1.74252,
+    'eeem' :  0.89174}
+
 dataEEevents = 12964286 + 23571931 + 33843769 + 34526899
 dataMMevents = 5636274 + 38006513 + 36820243 + 29308627
-print dataEEevents + dataMMevents
-
 
 dataMap = {'EE' : ('data_DoubleElectron_Run2012A_22Jan2013_v1.root',
                'data_DoubleElectron_Run2012B_22Jan2013_v1.root',
@@ -34,7 +43,7 @@ dataMap = {'EE' : ('data_DoubleElectron_Run2012A_22Jan2013_v1.root',
                'data_DoubleMuParked_Run2012C_22Jan2013_v1.root',
                'data_DoubleMuParked_Run2012D_22Jan2013_v1.root')}
 
-order = ['data', 'ZZZ', 'WZZ', 'WWZ', 'ZH_ww125', 'ZH_tt125', 'TTZ', 'GGToZZ2L2L', 'ZZ', 'A300']
+order = ['data', 'ZH_ww125', 'ZH_tt125', 'ZZZ', 'WZZ', 'WWZ', 'TTZ', 'GGToZZ2L2L', 'ZZ', 'A300']
 
 binMap = {
         0 : 'All Events',
@@ -49,8 +58,9 @@ binMap = {
         9 : 't2 Tight',
         10 : 'Passing' }
 
-channels = ['MMEM']#, 'MMMT', 'MMET', 'MMTT', 'EEET', 'EEMT', 'EEEM', 'EETT']
-
+channels = ['EEMT']#, 'MMMT', 'MMEM', 'MMTT', 'EEET', 'EEMT', 'EEEM', 'EETT']
+print "We're running over these channels:"
+print channels
 
 masterStack = ROOT.THStack("Master Cut Flow", "Combined Cut Flow for all MC samples")
 masterA300 = ROOT.THStack("A300", "Total for A300")
@@ -107,7 +117,7 @@ for sampName in order:
           cutFlowHist.SetFillStyle( 1001 )
         if sampName == 'A300':
           cutFlowHist.SetLineWidth(5)
-          cutFlowHist.SetLineColor(ROOT.kOrange+10)
+          cutFlowHist.SetLineColor(ROOT.kGreen)#kOrange+10)
         pad1.Close()
         c1.Close()
         gROOT.cd()
@@ -127,11 +137,11 @@ for sampName in order:
         temp.SetBinContent( 1, sampMap[sampName][3] )
         temp.Scale( cmsLumi / sampMap[sampName][2] )#* scale )
     elif sampName == 'data':
-        temp.SetBinContent( 1, dataMMevents )#dataEEevents + dataMMevents )
+        temp.SetBinContent( 1, dataEEevents )#dataEEevents + dataMMevents )
     else:
         temp.SetBinContent( 1, sampMap[sampName][3] )
         temp.Scale( cmsLumi / sampMap[sampName][2] )
-    c5.SaveAs("cutFlow%s.png" % sampName)
+    c5.SaveAs("cutFlowDir/cutFlow%s.png" % sampName)
     pad5.Close()
     c5.Close()
     gROOT.cd()
@@ -148,7 +158,16 @@ pad9.Draw()
 pad9.SetGridy(1)
 pad9.SetLogy()
 pad9.cd()
-masterData.Draw('e2')
+
+''' Add ZJets in last bin '''
+zJets = ROOT.TH1F("ZJets", "ZJets", 11, 0 ,11)
+zJets.SetBinContent( 11, ZjetsMap[ str(channels[0]).lower() ] )
+zJets.SetFillColor( ROOT.kCyan+1 )
+for i in range( 1, 12 ):
+    zJets.GetXaxis().SetBinLabel( i, binMap[i-1] )
+masterStack.Add( zJets )
+
+masterData.Draw('e1')
 masterStack.Draw('hist same')
 masterA300.Draw('same')
 masterData.GetYaxis().SetTitle("Expected Events per Category")
@@ -159,22 +178,24 @@ minVal = min( dataMin, stackMin, A300Min )
 masterData.SetMinimum( minVal * 0.5 )
 
 ''' Build the legend explicitly so we can specify marker styles '''
-legend = ROOT.TLegend(0.72, 0.55, 0.93, 0.89)
+legend = ROOT.TLegend(0.72, 0.59, 0.91, 0.89)
 legend.SetMargin(0.3)
 legend.SetBorderSize(0)
 legend.AddEntry( masterData, "Data", "lep")
-legend.AddEntry( masterA300, "A300", 'l')
+legend.AddEntry( masterA300, "A300, #sigma=1pb", 'l')
 for j in range(0, masterStack.GetStack().GetLast() + 1):
     last = masterStack.GetStack().GetLast()
     legend.AddEntry( masterStack.GetStack()[ last - j], masterStack.GetStack()[last - j].GetTitle(), 'f')
 legend.Draw()
 #plotter.printLumi(c9, 19.7, 8, "left") 
-masterData.SetTitle("Cut Flow showing signal selection progression")
+masterData.SetTitle("Cut Flow showing signal selection progression in %s" % channels[0])
 ROOT.gStyle.SetTitleOffset(1.15, "x")
+masterData.Draw('e1 same')
+masterData.GetStack().Last().SetMarkerSize(.8)
 ROOT.gPad.Modified()
 ROOT.gPad.Update()
 
-c9.SaveAs("cutFlow.png")
+c9.SaveAs("cutFlowDir/cutFlow.png")
 
 
 
