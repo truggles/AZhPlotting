@@ -6,10 +6,6 @@ from array import array
 nBins = 50
 nMax = 100
 
-#name = 'toParse1'
-#name = 'ffffffff-cd8a'
-#name = '2013_02_21'
-
 mapper = { 'HTC_A510' : ('1', '2'),
            'SPH-D710VMUB' : ('1'),
            'RAZR' : ('1', '2', '3', '4'),
@@ -20,26 +16,35 @@ for key in mapper.keys():
   print key
 
   #Set bin widths and max bins for each cell phone
+  #if 'HTC' in key:
+  #  nBins = 7
+  #  nMax = array( 'f', [0,10,20,30,40,60,80,100] )
+  #if 'SPH' in key:
+  #  nBins = 5
+  #  nMax = array( 'f', [0,10,20,30,50,70] )
+  #if 'RAZR' in key:
+  #  nBins = 10
+  #  nMax = array( 'f', [0,2.5,5,7.5,10,12.5,15,20,25,30,40] )
   if 'HTC' in key:
-    nBins = 7
-    nMax = array( 'f', [0,10,20,30,40,60,80,100] )
+    nBins = 10
+    nMax = 100
   if 'SPH' in key:
-    nBins = 5
-    nMax = array( 'f', [0,10,20,30,50,70] )
+    nBins = 10
+    nMax = 70
   if 'RAZR' in key:
     nBins = 10
-    nMax = array( 'f', [0,2.5,5,7.5,10,12.5,15,20,25,30,40] )
+    nMax = 40 
 
   ofile = open('muons_%s.txt' % key, 'w')
   ofile.write('Image : Eccentricites : Len1 : Len 2\n')
-  #lHistAll = ROOT.TH1F('%slength1' % key, '%s, Length of Muon Tracks, ecc = All' % key, nBins, 0, nMax)
-  #lHist90 = ROOT.TH1F('%slength2' % key, '%s, Length of Muon Tracks, ecc > 0.9' % key, nBins, 0, nMax)
-  #lHist95 = ROOT.TH1F('%slength3' % key, '%s, Length of Muon Tracks, ecc > 0.95' % key, nBins, 0, nMax)
-  #lHist99 = ROOT.TH1F('%slength4' % key, '%s, Length of Muon Tracks, ecc > 0.99' % key, nBins, 0, nMax)
-  lHistAll = ROOT.TH1F('%slength1' % key, '%s, Length of Muon Tracks, ecc = All' % key, nBins, nMax)
-  lHist90 = ROOT.TH1F('%slength2' % key, '%s, Length of Muon Tracks, ecc > 0.9' % key, nBins, nMax)
-  lHist95 = ROOT.TH1F('%slength3' % key, '%s, Length of Muon Tracks, ecc > 0.95' % key, nBins, nMax)
-  lHist99 = ROOT.TH1F('%slength4' % key, '%s, Length of Muon Tracks, ecc > 0.99' % key, nBins, nMax)
+  lHistAll = ROOT.TH1F('%slength1' % key, '%s, Length of Muon Tracks, ecc = All' % key, nBins, 0, nMax)
+  lHist90 = ROOT.TH1F('%slength2' % key, '%s, Length of Muon Tracks, ecc > 0.9' % key, nBins, 0, nMax)
+  lHist95 = ROOT.TH1F('%slength3' % key, '%s, Length of Muon Tracks, ecc > 0.95' % key, nBins, 0, nMax)
+  lHist99 = ROOT.TH1F('%slength4' % key, '%s, Length of Muon Tracks, ecc > 0.99' % key, nBins, 0, nMax)
+  #lHistAll = ROOT.TH1F('%slength1' % key, '%s, Length of Muon Tracks, ecc = All' % key, nBins, nMax)
+  #lHist90 = ROOT.TH1F('%slength2' % key, '%s, Length of Muon Tracks, ecc > 0.9' % key, nBins, nMax)
+  #lHist95 = ROOT.TH1F('%slength3' % key, '%s, Length of Muon Tracks, ecc > 0.95' % key, nBins, nMax)
+  #lHist99 = ROOT.TH1F('%slength4' % key, '%s, Length of Muon Tracks, ecc > 0.99' % key, nBins, nMax)
 
   #print len(mapper[key])
   for i in mapper[key]:
@@ -114,4 +119,26 @@ for key in mapper.keys():
 
   c1.SaveAs('muonsPlot_%s.png' % name)
   c1.Close()
+  c2 = ROOT.TCanvas("c1","title",600,600)
+  lHist99.Draw('hist e1')
+
+  funx = ROOT.TF1( 'funx', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', 0, 100 )
+  f1 = gROOT.GetFunction('funx')
+  f1.SetParName( 0, "vert count" )
+  f1.SetParName( 1, "depth" )
+  f1.SetParameter( 0, 999 )
+  f1.SetParameter( 1, 999 )
+  lHist99.Fit('funx')
+  fitResult = lHist99.GetFunction("funx")
+  fitResult.Draw('same')
+  c2.Update()
+
+  c2.SaveAs('finalFit%s.png' % name)
   gROOT.cd()
+
+
+
+
+
+
+
