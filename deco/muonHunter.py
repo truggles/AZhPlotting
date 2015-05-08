@@ -12,7 +12,7 @@ p.add_argument("file", nargs=1,
 args = p.parse_args()
 filename = args.file[0]
 
-name = filename
+name = filename 
 print "Created a folder for images: '%s' and a text output file with data logged: '%s_log.out'" % (name, name) 
 #sys.stdout = open('%s_log.out' % name, 'w')
 
@@ -20,6 +20,8 @@ print "Created a folder for images: '%s' and a text output file with data logged
 #name = 'ffffffff-cd8a'
 #name = 'standard'
 ifile = open('%s.txt' % name, 'r')
+
+name = filename + 'small'
 
 if not os.path.exists(name):
     os.makedirs(name)
@@ -37,7 +39,7 @@ for line_ in ifile:
     #print command
     #call([command])
     outCommand = "--output=%s/image_%s" % (name, info[-1][:-5] )
-    call(["./plotBlobs.py", line, "--contours=20", "--min-area=10", "--distance=40", outCommand])
+    call(["./plotBlobs.py", line, "--contours=25", "--min-area=4.5", "--distance=40", outCommand])
 
 now = time.strftime("%c")
 print "Finish date & time: " + now
