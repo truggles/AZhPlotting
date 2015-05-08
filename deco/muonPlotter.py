@@ -6,13 +6,28 @@ from array import array
 nBins = 50
 nMax = 100
 
-mapper = { 'HTC_A510' : ('1', '2'),
+mapper = { 'HTC_A510' : ('1', '2', 'small'),
+           #'HTC_A510small' : ('1'),
            'SPH-D710VMUB' : ('1', 'small'),
            'RAZR' : ('1', '2', '3', '4'),
            #'SAMSUNG-SGH' : ('1')
 }
 
+def getPass( name, length, ecc ):
+  hallPass = False
+  if name == 'HTC_A510':
+      if length < 10 and ecc > 0.7:
+        hallPass = True
+  if 'SPH' in name:
+      if length < 10 and ecc > 0.9:
+        hallPass = True
+  if 'RAZR  ' in name:
+      if length < 8 and ecc > 0.7:
+        hallPass = True
+  return hallPass
+
 for key in mapper.keys():
+  gStyle.SetOptStat( 1 )
   print key
 
   #Set bin widths and max bins for each cell phone
@@ -44,8 +59,10 @@ for key in mapper.keys():
   lHist90 = ROOT.TH1F('%slength2' % key, '%s, Length of Muon Tracks, ecc > 0.9' % key, nBins, 0, nMax)
   lHist95 = ROOT.TH1F('%slength3' % key, '%s, Length of Muon Tracks, ecc > 0.95' % key, nBins, 0, nMax)
   lHist99 = ROOT.TH1F('%slength4' % key, '%s, Length of Muon Tracks, ecc > 0.99' % key, nBins, 0, nMax)
-  lenVsEcc = ROOT.TH2I('lenVsEcc', 'Length vs. Eccentricity', 100, 0.0, lenMax, 100, 0, 1)
-  lenVsEcc2 = ROOT.TH2I('lenVsEcc2', 'Length vs. Eccentricity2', 100, 0.0, lenMax, 100, 0.5, 1)
+  lenVsEcc = ROOT.TH2I('lenVsEcc', 'Length vs. Eccentricity', 100/2, 0.0, lenMax, 100/2, 0, 1)
+  lenVsEcc2 = ROOT.TH2I('lenVsEcc2', 'Length vs. Eccentricity2', 100/2, 0.0, lenMax, 100/2, 0.5, 1)
+  AreaVsEcc = ROOT.TH2I('areaVsEcc', 'Area vs. Eccentricity', 100/2, 0.0, 100, 100/2, 0, 1)
+  AreaVsEcc2 = ROOT.TH2I('areaVsEcc2', 'Area vs. Eccentricity2', 100/2, 0.0, 100, 100/2, 0.5, 1)
   #lHistAll = ROOT.TH1F('%slength1' % key, '%s, Length of Muon Tracks, ecc = All' % key, nBins, nMax)
   #lHist90 = ROOT.TH1F('%slength2' % key, '%s, Length of Muon Tracks, ecc > 0.9' % key, nBins, nMax)
   #lHist95 = ROOT.TH1F('%slength3' % key, '%s, Length of Muon Tracks, ecc > 0.95' % key, nBins, nMax)
@@ -82,14 +99,17 @@ for key in mapper.keys():
         # Always fill the length vs eccentricity plot
         lenVsEcc.Fill( len_, ecc)
         lenVsEcc2.Fill( len_, ecc)
+        AreaVsEcc.Fill( area, ecc)
+        AreaVsEcc2.Fill( area, ecc)
  
         # Does the candidate pass the lower eccentricity / vertical candadate cut?
         passing = False
-#        if 'SPH' in key and mapper[key][1] == 'small':
-#            print "%f, %f" % (len_, ecc)
-        if ecc > 0.9:
-            if area < 30:
-                if l1 / l2 < 3: passing = True
+##        if 'SPH' in key and mapper[key][1] == 'small':
+##            print "%f, %f" % (len_, ecc)
+ #       if ecc > 0.9:
+ #           if area < 30:
+ #               if l1 / l2 < 3: passing = True
+        passing = getPass( key, len_, ecc )
 
         lHistAll.Fill( len_ )
         if float( ecc ) > 0.99 or passing:
@@ -135,32 +155,41 @@ for key in mapper.keys():
   c1.Close()
   c2 = ROOT.TCanvas("c1","title",600,600)
   lHist99.Draw('hist e1')
-  if not 'SPH' in key:
-    lHist99.SetBinContent(1, 0)
-    lHist99.SetBinError(1, 0)
+#  if not 'SPH' in key or not 'HTC' in key:
+#    lHist99.SetBinContent(1, 0)
+#    lHist99.SetBinError(1, 0)
 #  lHist99.SetBinContent(2, 0)
 #  lHist99.SetBinError(2, 0)
 #  lHist99.SetMaximum( lHist99.GetMaximum() * 10)
 
-  funx = ROOT.TF1( 'funx', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', 0, 100 )
+  funx = ROOT.TF1( 'funx', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', 0, nMax/2)
   f1 = gROOT.GetFunction('funx')
   f1.SetParName( 0, "vert count" )
   f1.SetParName( 1, "depth" )
   f1.SetParameter( 0, 999 )
   f1.SetParameter( 1, 999 )
-  lHist99.Fit('funx')
+#  lHist99.SetAxisRange( nMax/nBins * 3, nMax/nBins * 6 )
+#  if 'RAZR' in key:
+#    lHist99.SetAxisRange( nMax/nBins * 3, nMax/nBins * 6 )
+#  lHist99.Scale( 1 / lHist99.Integral() )
+  lHist99.Fit('funx', 'EMR')
   fitResult = lHist99.GetFunction("funx")
+  lHist99.SetAxisRange( 0, nMax )
   fitResult.Draw('same')
   c2.Update()
   c2.SaveAs('finalFit%s.png' % key)
   c2.Close()
 
-  c3 = ROOT.TCanvas("c3","title",1000,500)
-  c3.Divide(2,1)
+  c3 = ROOT.TCanvas("c3","title",800,800)
+  c3.Divide(2,2)
   c3.cd(1)
   lenVsEcc.Draw('COLZ')
   c3.cd(2)
   lenVsEcc2.Draw('COLZ')
+  c3.cd(3)
+  AreaVsEcc.Draw('COLZ')
+  c3.cd(4)
+  AreaVsEcc2.Draw('COLZ')
   gStyle.SetOptStat( 0 )
   c3.SaveAs('lenVsEcc_%s.png' % key)
   c3.Close()
