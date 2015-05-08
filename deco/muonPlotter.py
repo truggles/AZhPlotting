@@ -44,14 +44,17 @@ for key in mapper.keys():
     nBins = 10
     nMax = 100
     lenMax = 30
+    fitMin = 0
   if 'SPH' in key:
     nBins = 10
     nMax = 70
     lenMax = 30
+    fitMin = 0
   if 'RAZR' in key:
     nBins = 10
     nMax = 40 
     lenMax = 20
+    fitMin = 5
 
   ofile = open('muons_%s.txt' % key, 'w')
   ofile.write('Image : Eccentricites : Len1 : Len 2\n')
@@ -162,7 +165,7 @@ for key in mapper.keys():
 #  lHist99.SetBinError(2, 0)
 #  lHist99.SetMaximum( lHist99.GetMaximum() * 10)
 
-  funx = ROOT.TF1( 'funx', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', 0, nMax/2)
+  funx = ROOT.TF1( 'funx', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', fitMin, nMax/2)
   f1 = gROOT.GetFunction('funx')
   f1.SetParName( 0, "vert count" )
   f1.SetParName( 1, "depth" )
