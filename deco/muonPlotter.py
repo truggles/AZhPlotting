@@ -41,20 +41,20 @@ for key in mapper.keys():
   #  nBins = 10
   #  nMax = array( 'f', [0,2.5,5,7.5,10,12.5,15,20,25,30,40] )
   if 'HTC' in key:
-    nBins = 10
+    nBins = 20
     nMax = 100
     lenMax = 30
-    fitMin = 0
+    fitMin = 1
   if 'SPH' in key:
-    nBins = 10
+    nBins = 20
     nMax = 70
     lenMax = 30
-    fitMin = 0
+    fitMin = 1
   if 'RAZR' in key:
-    nBins = 10
+    nBins = 20
     nMax = 40 
     lenMax = 20
-    fitMin = 5
+    fitMin = 3
 
   ofile = open('muons_%s.txt' % key, 'w')
   ofile.write('Image : Eccentricites : Len1 : Len 2\n')
@@ -96,9 +96,6 @@ for key in mapper.keys():
         #else: len = l2
         len_ = l2
 
-        # Give me some info on the low length high ecc events
-#        if len_ < 10 and ecc > 0.99:
-#            print "Evt: %s, Len: %f, Ecc: %f" % (str(info[0]), len_, ecc)
         # Always fill the length vs eccentricity plot
         lenVsEcc.Fill( len_, ecc)
         lenVsEcc2.Fill( len_, ecc)
@@ -107,11 +104,6 @@ for key in mapper.keys():
  
         # Does the candidate pass the lower eccentricity / vertical candadate cut?
         passing = False
-##        if 'SPH' in key and mapper[key][1] == 'small':
-##            print "%f, %f" % (len_, ecc)
- #       if ecc > 0.9:
- #           if area < 30:
- #               if l1 / l2 < 3: passing = True
         passing = getPass( key, len_, ecc )
 
         lHistAll.Fill( len_ )
@@ -122,15 +114,7 @@ for key in mapper.keys():
         if float( ecc ) > 0.90:
             lHist90.Fill( len_ )
 
-  # Fitting now
-#  def myfunc( x ):
-#    scale = 1
-#    depth = 10
-#    return (scale * cos( TMath.ATan( x / depth ) )**2 )
-
-    
   ofile.close()
-  
   c1 = ROOT.TCanvas("c1","title",1200,400)
   c1.Divide(4,1)
   c1.cd(1)
@@ -165,7 +149,7 @@ for key in mapper.keys():
 #  lHist99.SetBinError(2, 0)
 #  lHist99.SetMaximum( lHist99.GetMaximum() * 10)
 
-  funx = ROOT.TF1( 'funx', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', fitMin, nMax/2)
+  funx = ROOT.TF1( 'funx', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', (nMax/nBins)*fitMin, nMax/2)
   f1 = gROOT.GetFunction('funx')
   f1.SetParName( 0, "vert count" )
   f1.SetParName( 1, "depth" )
@@ -174,8 +158,13 @@ for key in mapper.keys():
 #  lHist99.SetAxisRange( nMax/nBins * 3, nMax/nBins * 6 )
 #  if 'RAZR' in key:
 #    lHist99.SetAxisRange( nMax/nBins * 3, nMax/nBins * 6 )
-#  lHist99.Scale( 1 / lHist99.Integral() )
-  lHist99.Fit('funx', 'EMR')
+
+  # Scale to max bin = 1
+#  maxi = lHist99.GetMaximum()
+#  inti = lHist99.Integral()
+#  lHist99.Scale( 1 / maxi )
+
+  lHist99.Fit('funx', 'EMRI')
   fitResult = lHist99.GetFunction("funx")
   lHist99.SetAxisRange( 0, nMax )
   fitResult.Draw('same')
