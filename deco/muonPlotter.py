@@ -9,7 +9,7 @@ nMax = 100
 mapper = { 'HTC_A510' : ('1', '2', 'small'),
            #'HTC_A510small' : ('1'),
            'SPH-D710VMUB' : ('1', 'small'),
-           'RAZR' : ('1', '2', '3', '4'),
+#           'RAZR' : ('1', '2', '3', '4', 'small'),
            #'SAMSUNG-SGH' : ('1')
 }
 
@@ -25,6 +25,23 @@ def getPass( name, length, ecc ):
       if length < 8 and ecc > 0.7:
         hallPass = True
   return hallPass
+
+def getRecord(ifile):
+  record = {}
+  count = 0
+  previous = '0'
+  for line in ifile:
+      if 'majA' not in line: continue
+      info = line.split(' ')
+      event = str( info[0] )
+      if event == previous:
+          count += 1
+      else:
+          record[ event ] = count
+          count = 1
+          previous = event
+  return record
+          
 
 for key in mapper.keys():
   gStyle.SetOptStat( 1 )
@@ -44,12 +61,12 @@ for key in mapper.keys():
     nBins = 20
     nMax = 100
     lenMax = 30
-    fitMin = 1
+    fitMin = 4
   if 'SPH' in key:
     nBins = 20
     nMax = 70
     lenMax = 30
-    fitMin = 1
+    fitMin = 2
   if 'RAZR' in key:
     nBins = 20
     nMax = 40 
@@ -79,11 +96,18 @@ for key in mapper.keys():
     #print name
     ifile = open('%s_log.out' % name, 'r')
     
-    for line in ifile:
-        if 'majA' not in line: continue
-        info = line.split(' ')
+    record = getRecord( ifile )
+    #print record
+  
+    ifile.close()    
+    ifile = open('%s_log.out' % name, 'r')
+
+    for linex in ifile:
+        if 'majA' not in linex: continue
+        info = linex.split(' ')
         #print info
         fst = str( info[0] )[0]
+        event = str( info[0] )
         ecc = float( info[12] )
         l1 = float( info[18] )
         l2 = float( info[21] )
@@ -96,6 +120,13 @@ for key in mapper.keys():
         #else: len = l2
         len_ = l2
 
+        # Skip the event line if there are more than XXX blobs that were IDed
+        #print record[ event ]
+        if record[ event ] > 1: continue
+        if area > 10 and i == 'small': continue
+        #if area < 10 and ecc > 0.99:
+        #    print "%s   area: %f   ecc: %f" % (event, area, ecc)
+
         # Always fill the length vs eccentricity plot
         lenVsEcc.Fill( len_, ecc)
         lenVsEcc2.Fill( len_, ecc)
@@ -105,6 +136,7 @@ for key in mapper.keys():
         # Does the candidate pass the lower eccentricity / vertical candadate cut?
         passing = False
         passing = getPass( key, len_, ecc )
+        passing = False
 
         lHistAll.Fill( len_ )
         if float( ecc ) > 0.99 or passing:
@@ -149,7 +181,8 @@ for key in mapper.keys():
 #  lHist99.SetBinError(2, 0)
 #  lHist99.SetMaximum( lHist99.GetMaximum() * 10)
 
-  funx = ROOT.TF1( 'funx', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', (nMax/nBins)*fitMin, nMax/2)
+  funx = ROOT.TF1( 'funx', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', (nMax/nBins)*fitMin, nMax)
+  #funx = ROOT.TF1( 'funx', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', 10, nMax/2)
   f1 = gROOT.GetFunction('funx')
   f1.SetParName( 0, "vert count" )
   f1.SetParName( 1, "depth" )
@@ -168,8 +201,35 @@ for key in mapper.keys():
   fitResult = lHist99.GetFunction("funx")
   lHist99.SetAxisRange( 0, nMax )
   fitResult.Draw('same')
+
+  # Plot others varied by for an eye comparison
+  fitVert = fitResult.GetParameter( 0 )
+  fitDepth = fitResult.GetParameter( 1 )
+  fitVertError = fitResult.GetParError( 0 )
+  fitDepthError = fitResult.GetParError( 1 )
+  fun2 = ROOT.TF1( 'fun2', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', 0, 100)
+  f2 = gROOT.GetFunction('fun2')
+  f2.SetParameter( 0, fitVert )
+  #f2.SetParameter( 1, fitDepth + fitDepthError )
+  f2.SetParameter( 1, fitDepth * 1.5 )
+  f2.Draw('same')
+  fun3 = ROOT.TF1( 'fun3', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', 0, 100)
+  f3 = gROOT.GetFunction('fun3')
+  f3.SetParameter( 0, fitVert )
+  #f3.SetParameter( 1, fitDepth - fitDepthError )
+  f3.SetParameter( 1, fitDepth * 0.5 )
+  f3.Draw('same')
   c2.Update()
-  c2.SaveAs('finalFit%s.png' % key)
+  c2.SaveAs('finalFit%s_depthfit.png' % key)
+
+  #f2.SetParameter( 0, fitVert + fitVertError )
+  f2.SetParameter( 0, fitVert * 1.5 )
+  f2.SetParameter( 1, fitDepth )
+  #f3.SetParameter( 0, fitVert - fitVertError )
+  f3.SetParameter( 0, fitVert * 0.5 )
+  f3.SetParameter( 1, fitDepth )
+  c2.Update()
+  c2.SaveAs('finalFit%s_vertFit.png' % key)
   c2.Close()
 
   c3 = ROOT.TCanvas("c3","title",800,800)
