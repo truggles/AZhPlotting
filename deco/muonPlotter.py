@@ -183,7 +183,7 @@ for key in mapper.keys():
 
   c1.SaveAs('muonsPlot_%s.png' % key)
   c1.Close()
-  c2 = ROOT.TCanvas("c1","title",600,600)
+  c2 = ROOT.TCanvas("c2","title",600,600)
   lHist99.Draw('hist e1')
 #  if not 'SPH' in key or not 'HTC' in key:
 #    lHist99.SetBinContent(1, 0)
@@ -192,13 +192,23 @@ for key in mapper.keys():
 #  lHist99.SetBinError(2, 0)
 #  lHist99.SetMaximum( lHist99.GetMaximum() * 10)
 
-  funx = ROOT.TF1( 'funx', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', (nMax/nBins)*fitMin, nMax)
+#  funx = ROOT.TF1( 'funx', '[0]*(1/(1+TMath::Exp(-[2]*(x - [3])))) * cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', (nMax/nBins)*fitMin, nMax)
+#  funx = ROOT.TF1( 'funx', '[0] * cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', (nMax/nBins)*fitMin, nMax)
   #funx = ROOT.TF1( 'funx', '[0]*cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', 10, nMax/2)
+  funx = ROOT.TF1( 'funx', '(1/(1+TMath::Exp([2]*(x-[3]))))*[0] * cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', 0, nMax)
   f1 = gROOT.GetFunction('funx')
   f1.SetParName( 0, "vert count" )
   f1.SetParName( 1, "depth" )
   f1.SetParameter( 0, 999 )
   f1.SetParameter( 1, 999 )
+  f1.SetParName( 2, "steepness" )
+  f1.SetParameter( 2, -1 )
+  f1.SetParName( 3, "x offset" )
+  f1.SetParameter( 3, 3 )
+#  f1.SetParName( 2, "steepness" )
+#  f1.SetParName( 3, "x offset" )
+#  f1.SetParameter( 2, 999 )
+#  f1.SetParameter( 3, 999 )
 #  lHist99.SetAxisRange( nMax/nBins * 3, nMax/nBins * 6 )
 #  if 'RAZR' in key:
 #    lHist99.SetAxisRange( nMax/nBins * 3, nMax/nBins * 6 )
