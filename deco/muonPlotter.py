@@ -79,10 +79,11 @@ for key in mapper.keys():
   lHist90 = ROOT.TH1F('%slength2' % key, '%s, Length of Muon Tracks, ecc > 0.9' % key, nBins, 0, nMax)
   lHist95 = ROOT.TH1F('%slength3' % key, '%s, Length of Muon Tracks, ecc > 0.95' % key, nBins, 0, nMax)
   lHist99 = ROOT.TH1F('%slength4' % key, '%s, Length of Muon Tracks, ecc > 0.99' % key, nBins, 0, nMax)
-  lenVsEcc = ROOT.TH2I('lenVsEcc', 'Length vs. Eccentricity', 100/2, 0.0, lenMax, 100/2, 0, 1)
-  lenVsEcc2 = ROOT.TH2I('lenVsEcc2', 'Length vs. Eccentricity2', 100/2, 0.0, lenMax, 100/2, 0.5, 1)
-  AreaVsEcc = ROOT.TH2I('areaVsEcc', 'Area vs. Eccentricity', 100/2, 0.0, 100, 100/2, 0, 1)
-  AreaVsEcc2 = ROOT.TH2I('areaVsEcc2', 'Area vs. Eccentricity2', 100/2, 0.0, 100, 100/2, 0.5, 1)
+  cdf = ROOT.TH1F('%scdf' % key, '%s, CDF of all events' % key, nMax, 0, nMax)
+  lenVsEcc = ROOT.TH2I('%slenVsEcc' % key, 'Length vs. Eccentricity', 100/2, 0.0, lenMax, 100/2, 0, 1)
+  lenVsEcc2 = ROOT.TH2I('%slenVsEcc2' % key, 'Length vs. Eccentricity2', 100/2, 0.0, lenMax, 100/2, 0.5, 1)
+  AreaVsEcc = ROOT.TH2I('%sareaVsEcc' % key, 'Area vs. Eccentricity', 100/2, 0.0, 100, 100/2, 0, 1)
+  AreaVsEcc2 = ROOT.TH2I('%sareaVsEcc2' % key, 'Area vs. Eccentricity2', 100/2, 0.0, 100, 100/2, 0.5, 1)
   #lHistAll = ROOT.TH1F('%slength1' % key, '%s, Length of Muon Tracks, ecc = All' % key, nBins, nMax)
   #lHist90 = ROOT.TH1F('%slength2' % key, '%s, Length of Muon Tracks, ecc > 0.9' % key, nBins, nMax)
   #lHist95 = ROOT.TH1F('%slength3' % key, '%s, Length of Muon Tracks, ecc > 0.95' % key, nBins, nMax)
@@ -138,6 +139,7 @@ for key in mapper.keys():
         passing = getPass( key, len_, ecc )
         passing = False
 
+        cdf.Fill( len_ )
         lHistAll.Fill( len_ )
         if float( ecc ) > 0.99 or passing:
             lHist99.Fill( len_ )
@@ -147,6 +149,15 @@ for key in mapper.keys():
             lHist90.Fill( len_ )
 
   ofile.close()
+  c5 = ROOT.TCanvas("c1","title",600,600)
+  cdfFinal = ROOT.TH1F('%scdfFinal' % key, '%s, CDF of all events' % key, nMax, 0, nMax)
+  for bin in range( 1, nMax + 1 ):
+      newVal = cdfFinal.GetBinContent( bin - 1 ) + cdf.GetBinContent( bin )
+      cdfFinal.SetBinContent( bin, newVal )
+  cdfFinal.Scale( 1 / cdfFinal.GetBinContent( nMax ) )
+  cdfFinal.Draw()
+  c5.SaveAs('CDF_%s.png' % key)
+  c5.Close()
   c1 = ROOT.TCanvas("c1","title",1200,400)
   c1.Divide(4,1)
   c1.cd(1)
