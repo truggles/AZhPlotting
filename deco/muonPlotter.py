@@ -51,28 +51,31 @@ for key in mapper.keys():
     nMax = 100
     lenMax = 30
     fitMin = 4
+    namer = "HTC Wildfire S"
   if 'SPH' in key:
     nBins = 20
     nMax = 70
     lenMax = 30
     fitMin = 2
+    namer = "Samsumg Galaxy S2"
   if 'RAZR' in key:
     nBins = 20
     nMax = 40 
     lenMax = 20
     fitMin = 3
+    namer = "RAZR"
 
   ofile = open('muons_%s.txt' % key, 'w')
   ofile.write('Image : Eccentricites : Len1 : Len 2\n')
-  lHistAll = ROOT.TH1F('%slength1' % key, '%s, Length of Muon Tracks, ecc = All' % key, nBins, 0, nMax)
-  lHist90 = ROOT.TH1F('%slength2' % key, '%s, Length of Muon Tracks, ecc > 0.9' % key, nBins, 0, nMax)
-  lHist95 = ROOT.TH1F('%slength3' % key, '%s, Length of Muon Tracks, ecc > 0.95' % key, nBins, 0, nMax)
-  lHist99 = ROOT.TH1F('%slength4' % key, '%s, Length of Muon Tracks, ecc > 0.99' % key, nBins, 0, nMax)
-  #cdf = ROOT.TH1F('%scdf' % key, '%s, CDF of all events' % key, nMax, 0, nMax)
-  lenVsEcc = ROOT.TH2I('%slenVsEcc' % key, 'Length vs. Eccentricity', 100/2, 0.0, lenMax, 100/2, 0, 1)
-  lenVsEcc2 = ROOT.TH2I('%slenVsEcc2' % key, 'Length vs. Eccentricity2', 100/2, 0.0, lenMax, 100/2, 0.5, 1)
-  AreaVsEcc = ROOT.TH2I('%sareaVsEcc' % key, 'Area vs. Eccentricity', 100/2, 0.0, 100, 100/2, 0, 1)
-  AreaVsEcc2 = ROOT.TH2I('%sareaVsEcc2' % key, 'Area vs. Eccentricity2', 100/2, 0.0, 100, 100/2, 0.5, 1)
+  lHistAll = ROOT.TH1F('%slength1' % namer, '%s, Length of Muon Tracks, ecc = All' % namer, nBins, 0, nMax)
+  lHist90 = ROOT.TH1F('%slength2' % namer, '%s, Length of Muon Tracks, ecc > 0.9' % namer, nBins, 0, nMax)
+  lHist95 = ROOT.TH1F('%slength3' % namer, '%s, Length of Muon Tracks, ecc > 0.95' % namer, nBins, 0, nMax)
+  lHist99 = ROOT.TH1F('%slength' % namer, '%s, Length of Muon Tracks, ecc > 0.99' % namer, nBins, 0, nMax)
+  #cdf = ROOT.TH1F('%scdf' % namer, '%s, CDF of all events' % namer, nMax, 0, nMax)
+  lenVsEcc = ROOT.TH2I('%slenVsEcc' % namer, 'Eccentricity vs. Length', 100/2, 0.0, lenMax, 100/2, 0, 1)
+  lenVsEcc2 = ROOT.TH2I('%slenVsEcc2' % namer, 'Eccentricity vs. Length', 100/2, 0.0, lenMax, 100/2, 0.5, 1)
+  AreaVsEcc = ROOT.TH2I('%sareaVsEcc' % namer, 'Eccentricity vs. Area', 100/2, 0.0, 100, 100/2, 0, 1)
+  AreaVsEcc2 = ROOT.TH2I('%sareaVsEcc2' % namer, 'Eccentricity vs. Area', 100/2, 0.0, 100, 100/2, 0.5, 1)
 
   for i in mapper[key]:
     print i
@@ -165,6 +168,7 @@ for key in mapper.keys():
   lHist99.GetXaxis().SetTitle("Length (pixel widths)")
   lHist99.GetYaxis().SetTitle("Events / %s pixel widths" % str(nMax/nBins) )
   lHist99.Draw('hist e1')
+  c2.SaveAs('final%s_noFit.png' % key)
 
   ''' Do some fitting to find the depth of the depletion region '''
   #funx = ROOT.TF1( 'funx', '[0] * cos( TMath::ATan( x / [1]) )*cos( TMath::ATan( x / [1]) )', (nMax/nBins)*fitMin, nMax)
@@ -184,6 +188,7 @@ for key in mapper.keys():
   fitResult = lHist99.GetFunction("funx")
   lHist99.SetAxisRange( 0, nMax )
   fitResult.Draw('same')
+  c2.SaveAs('final%s_Fit.png' % key)
 
   # Plot others varied by for an eye comparison
   # Adjust the depth fit to show errors
