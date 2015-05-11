@@ -162,6 +162,8 @@ for key in mapper.keys():
   c1.SaveAs('muonsPlot_%s.png' % key)
   c1.Close()
   c2 = ROOT.TCanvas("c2","title",600,600)
+  lHist99.GetXaxis().SetTitle("Length (pixel widths)")
+  lHist99.GetYaxis().SetTitle("Events / %s pixel widths" % str(nMax/nBins) )
   lHist99.Draw('hist e1')
 
   ''' Do some fitting to find the depth of the depletion region '''
