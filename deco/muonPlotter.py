@@ -100,11 +100,9 @@ for key in mapper.keys():
         ofile.write('%10s %10f %10f %10f' % (info[0], ecc, l1, l2) )
         len_ = l2
 
-        # Skip the event line if there are more than XXX blobs that were IDed
+        # Skip the event line if there are more than XXX blobs that were IDed in that image
         if record[ event ] > 1: continue
         if area > 10 and i == 'small': continue
-        #if area < 10 and ecc > 0.99:
-        #    print "%s   area: %f   ecc: %f" % (event, area, ecc)
 
         # Always fill the length vs eccentricity plot
         lenVsEcc.Fill( len_, ecc)
