@@ -2,7 +2,6 @@
 
 import argparse
 import os
-#import sys
 from subprocess import call
 import time
 
@@ -13,15 +12,9 @@ args = p.parse_args()
 filename = args.file[0]
 
 name = filename 
-print "Created a folder for images: '%s' and a text output file with data logged: '%s_log.out'" % (name, name) 
-#sys.stdout = open('%s_log.out' % name, 'w')
+print "Created a folder for images: '%s'" % name 
 
-#name = '2013_02_21'
-#name = 'ffffffff-cd8a'
-#name = 'standard'
 ifile = open('%s.txt' % name, 'r')
-
-name = filename + 'small'
 
 if not os.path.exists(name):
     os.makedirs(name)
@@ -31,13 +24,7 @@ print "Start date & time: " + now
 
 for line_ in ifile:
     info = line_.split('/')
-    #print info[-1]
-    
     line = line_.strip()
-    #print line
-    #command = "./plotBlobs.py %s --contours 20 --min-area=10 --distance=40 --output=tester" % line
-    #print command
-    #call([command])
     outCommand = "--output=%s/image_%s" % (name, info[-1][:-5] )
     call(["./plotBlobs.py", line, "--contours=25", "--min-area=4.5", "--distance=40", outCommand])
 

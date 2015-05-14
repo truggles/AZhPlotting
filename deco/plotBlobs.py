@@ -139,6 +139,17 @@ class BlobGroup:
                     Mpq += x**p * y**q * image[i,j]
         return Mpq
 
+    def getMaxIntensity(self, image):
+        """Find the maximum intensity withing the blob
+           where I(x,y) is the image intensity at location x,y."""
+        nx,ny = image.shape
+        maxI = 0.
+        for i in range(0,nx):
+            for j in range(0,ny):
+                if image[i,j] > maxI: maxI = image[i,j]
+        return maxI
+
+    # Not sure if this works
     def getArea(self, image):
         """Get the raw moments of the image region inside the bounding box
            defined by this blob group and calculate the image covariance
@@ -180,7 +191,7 @@ class BlobGroup:
         l2 = 0.5*(u20+u02) - 0.5*np.sqrt(4*u11**2 + (u20-u02)**2)
         return l1, l2, theta
 
-def findBlobs(image, threshold, minArea=2.):
+def findBlobs(image, threshold, minArea=2., maxArea=1000.):
     """Pass through an image and find a set of blobs/contours above a set
        threshold value.  The minArea parameter is used to exclude blobs with an
        area below this value."""
@@ -193,17 +204,8 @@ def findBlobs(image, threshold, minArea=2.):
         x = contour[:,1]
         y = ny - contour[:,0]
         blob = Blob(x, y)
-        if blob.area >= minArea:
-            #print contours[0]
-            #print contour
+        if blob.area >= minArea and blob.area <= maxArea:
             blobs.append(blob)
-            #test = [[0,1],[7,-9]]
-            #print test
-            #test2 = np.column_stack(test)
-            #print test2
-            #model = measure.LineModel()
-            #print model.estimate( test2 )
-            #print "xmin: %f, ymin: %f" % (blob.xMin, blob.yMin)
     return blobs
 
 def groupBlobs(blobs, maxDist):
@@ -266,6 +268,9 @@ blobGroup.add_argument("-d", "--distance", dest="distance", type=float,
 blobGroup.add_argument("-a", "--min-area", dest="area", type=float,
                        default=2.,
                        help="Remove blobs below some minimum area")
+blobGroup.add_argument("-m", "--max-area", dest="max", type=float,
+                       default=1000.,
+                       help="Remove blobs above some maximum area")
 
 args = p.parse_args()
 
@@ -290,7 +295,7 @@ image = np.array(image, dtype=float)
 # store as Blobs, and group the Blobs into associated clusters
 if args.contours != None:
     #contours = measure.find_contours(image, args.contours)
-    blobs = findBlobs(image, threshold=args.contours, minArea=args.area)
+    blobs = findBlobs(image, threshold=args.contours, minArea=args.area, maxArea=args.max)
     groups = groupBlobs(blobs, maxDist=args.distance)
 
 # Apply a threshold to the image pixel values
@@ -337,21 +342,23 @@ if args.contours != None:
         X0, X1, Y0, Y1 = bg.getSquareBoundingBox()
         l1, l2, theta = bg.getPrincipalMoments(image)
         eccentricity = (np.sqrt( l1**2 - l2**2 ) / l1)
+        maxI = bg.getMaxIntensity(image)
         #area = bg.getArea(image)
         area = areas.pop(0)
-        len = area / l2
-        len2 = lengths.pop(0)
-        #print "%s major axis: %12g minor axis: %12g theta: %12g eccentricity: %f" % \
-        print "%s  majA: %g  minA: %g  theta: %g  ecc: %f  area: %f  len: %f  len2: %f" % \
-              (os.path.basename(filename), l1, l2, theta*180./np.pi, eccentricity, area, len, len2 )
+        aOverMaj = area / l2
+        len = lengths.pop(0)
 
         fig = plt.figure(figsize=(6,6))
         axg = fig.add_subplot(111)
         im = axg.imshow(image, cmap=mpl.cm.hot,
                         interpolation="nearest", aspect="auto",
                         extent=[x0, x1, y0, y1])
+        numBlobs = 0
         for blob in bg.blobs:
+            numBlobs += 1
             axg.plot(blob.x, blob.y, linewidth=2, color="#00dd00")
+        print "%s  majA: %g  minA: %g  theta: %g  ecc: %f  area: %f  aOverMaj: %f  len: %f #blobs: %i maxI: %i" % \
+              (os.path.basename(filename), l1, l2, theta*180./np.pi, eccentricity, area, aOverMaj, len, numBlobs, maxI )
         axg.set_xlim([X0-5, X1+5])
         axg.set_ylim([Y0-5, Y1+5])
         axg.set_xlabel("pixels")
