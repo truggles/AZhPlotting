@@ -6,10 +6,10 @@ from array import array
 nBins = 50
 nMax = 100
 
-mapper = { 'HTC_A510' : ('1', '2', 'small'),
-           #'HTC_A510small' : ('1'),
-           'SPH-D710VMUB' : ('1', 'small'),
-#           'RAZR' : ('1', '2', '3', '4', 'small'),
+mapper = { 'HTC_A510' : ('1', '2'),#, 's'),
+           #'HTC_A510s' : ('1'),
+           'SPH-D710VMUB' : ('1'),#, 's'),
+#           'RAZR' : ('1', '2', '3', '4', 's'),
            #'SAMSUNG-SGH' : ('1')
 }
 
@@ -102,7 +102,7 @@ for key in mapper.keys():
 
         # Skip the event line if there are more than XXX blobs that were IDed in that image
         if record[ event ] > 1: continue
-        if area > 10 and i == 'small': continue
+        #if area > 10 and i == 's': continue
 
         # Always fill the length vs eccentricity plot
         lenVsEcc.Fill( len_, ecc)
